@@ -1,20 +1,15 @@
 package com.alex.ua.config;
 
-import com.alex.ua.client.FarmBullClientImpl;
 import com.alex.ua.client.delivery.model.DeliveryModel;
-import com.alex.ua.client.farm.booster.BoosterDto;
-import com.alex.ua.client.farm.model.FarmDto;
 import com.alex.ua.client.farm.model.FarmModel;
 import com.alex.ua.provider.DeliveryObjectProvider;
-import com.alex.ua.provider.FarmObjectProvider;
+import com.alex.ua.provider.FarmObjectProviderV2;
 import com.alex.ua.service.DeliveryService;
-import com.alex.ua.service.FarmService;
-import com.alex.ua.service.WorkShopService;
+import com.alex.ua.service.FarmServiceV2;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 
-import java.time.LocalDateTime;
 import java.util.LinkedList;
 
 @SpringBootApplication(
@@ -26,8 +21,7 @@ public class Application {
         ApplicationContext context = SpringApplication.run(Application.class, args);
 
         // Get the FarmService bean from the application context
-        FarmService farmService = context.getBean(FarmService.class);
-        WorkShopService workShopService = context.getBean(WorkShopService.class);
+        FarmServiceV2 farmService = context.getBean(FarmServiceV2.class);
         DeliveryService deliveryService = context.getBean(DeliveryService.class);
         //FarmBullClientImpl farmBullClient = context.getBean(FarmBullClientImpl.class);
 
@@ -42,49 +36,16 @@ public class Application {
         laosModels.forEach(model -> model.setStartDateTime(LocalDateTime.now().minusMinutes(130)));
         moldovaModels.forEach(model -> model.setStartDateTime(LocalDateTime.now().minusMinutes(310)));*/
 
-        FarmObjectProvider objectProvider = new FarmObjectProvider();
-        LinkedList<FarmModel> farmModelList = objectProvider.getFarmModelList();
-
-        LinkedList<FarmModel> workshopModelList = objectProvider.getWorkshopModelList();
-        FarmModel workshopModelForCycle = workshopModelList.get(0);
-
-        LinkedList<FarmModel> workshopKitchenModelList = objectProvider.getWorkshopKitchenModelList();
-        FarmModel workshopKitchenModelForCycle = workshopKitchenModelList.get(0);
-
-        LinkedList<FarmModel> workshopFactoryModelList = objectProvider.getWorkshopFactoryModelList();
-        FarmModel workshopFactoryModelForCycle = workshopFactoryModelList.get(0);
+        FarmObjectProviderV2 farmObjectProviderV2 = new FarmObjectProviderV2();
+        LinkedList<FarmModel> farmModelList = farmObjectProviderV2.getFarmModelList();
 
         do {
-            farmModelList.forEach(farmService::runFarmEvent);
+            farmModelList.forEach(farmModel -> farmService.runFarmEvent(farmModel, farmObjectProviderV2.getFarmModelList()));
 
-            /*//Bakaly
-            if (workShopService.shouldCollect(workshopModelForCycle)) {
-                workShopService.collect(workshopModelForCycle);
-                workshopModelForCycle = workshopModelForCycle.getNext();
-            } else {
-                workShopService.runFarmEvent(workshopModelForCycle);
-            }*/
-
-            /*//Kitchen
-            if (workShopService.shouldCollect(workshopKitchenModelForCycle)) {
-                workShopService.collect(workshopKitchenModelForCycle);
-                workshopKitchenModelForCycle = workshopKitchenModelForCycle.getNext();
-            } else {
-                workShopService.runFarmEvent(workshopKitchenModelForCycle);
-            }
-
-            //Factory
-            if (workShopService.shouldCollect(workshopFactoryModelForCycle)) {
-                workShopService.collect(workshopFactoryModelForCycle);
-                workshopFactoryModelForCycle = workshopFactoryModelForCycle.getNext();
-            } else {
-                workShopService.runFarmEvent(workshopFactoryModelForCycle);
-            }*/
-
-            burundiModels.forEach(bur -> deliveryService.runBurundiEvent(bur, objectProvider.getAllFarmModels()));
-            //ugandaModels.forEach(uga -> deliveryService.runUgandaEvent(uga, objectProvider.getAllFarmModels()));
-            /*laosModels.forEach(lao -> deliveryService.runLaosEvent(lao, objectProvider.getAllFarmModels()));
-            moldovaModels.forEach(mol -> deliveryService.runMoldovaEvent(mol, objectProvider.getWorkshopModelList()));*/
+            //burundiModels.forEach(bur -> deliveryService.runBurundiEvent(bur, farmObjectProviderV2.getFarmModelList()));
+            //ugandaModels.forEach(uga -> deliveryService.runUgandaEvent(uga, farmObjectProviderV2.getFarmModelList()));
+            //laosModels.forEach(lao -> deliveryService.runLaosEvent(lao, farmObjectProviderV2.getFarmModelList()));
+            //moldovaModels.forEach(mol -> deliveryService.runMoldovaEvent(mol, farmObjectProviderV2.getFarmModelList()));
 
             try {
                 Thread.sleep(10000); // 60000 milliseconds = 1 minute

@@ -4,7 +4,7 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.Map;
 
 /**
  * The type Farm model.
@@ -14,10 +14,7 @@ import java.util.List;
 public class FarmModel {
     private final FarmDto farmDto;
     private final long growTime;
-    private final int amountForChildren;
-    private int timesCollected = 0;
     private LocalDateTime startDateTime;
-    private final List<FarmModel> children;
-    private int storedAmount = 5000;
-    private FarmModel next;
+    private int storedAmount = 0;
+    private final Map<String, Integer> required;
 }
