@@ -13,8 +13,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.alex.ua.util.ColorUtils.RED;
-import static com.alex.ua.util.ColorUtils.RESET;
+import static com.alex.ua.util.ColorUtils.*;
+import static com.alex.ua.util.ColorUtils.GREEN;
 
 @Service
 public class FarmServiceV2 {
@@ -28,7 +28,7 @@ public class FarmServiceV2 {
         if (shouldCollect(model)) {
             collect(model);
         } else if (hasFreePlots() && shouldStartNewEvent(model) && isEnoughResources(model, allFarmModels)) {
-            startNewEvent(model);
+            startNewEvent(model, allFarmModels);
         }
     }
 
@@ -65,11 +65,22 @@ public class FarmServiceV2 {
         return Objects.isNull(model.getStartDateTime());
     }
 
-    private void startNewEvent(FarmModel model) {
+    private void startNewEvent(FarmModel model, List<FarmModel> allFarmModels) {
         String farmRun = farmBullClient.farmRun(model.getFarmDto());
         logEvent(model, farmRun);
         model.setStartDateTime(LocalDateTime.now());
         System.out.println("active plots: " + activePlots.incrementAndGet()); // Увеличиваем количество активных грядок при старте нового события
+        if (!CollectionUtils.isEmpty(model.getRequired())) {
+            model.getRequired().entrySet().forEach(required -> {
+                FarmModel farmModel = allFarmModels.stream()
+                        .filter(farm -> farm.getFarmDto().getId().equals(required.getKey()))
+                        .findFirst()
+                        .orElseThrow();
+                System.out.println(YELLOW + " was stored amount: " + farmModel.getFarmDto().getId() + " " + farmModel.getStoredAmount() + " " + RESET + " ");
+                farmModel.setStoredAmount(farmModel.getStoredAmount() - required.getValue());
+                System.out.println(YELLOW + " set stored amount: " + farmModel.getFarmDto().getId() + " " + farmModel.getStoredAmount() + " " + RESET + " ");
+            });
+        }
     }
 
     private void logEvent(FarmModel model, FarmCollectResponse response) {

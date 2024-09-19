@@ -41,7 +41,7 @@ public class FarmObjectProviderV2 {
         farmModelList.add(new FarmModel(new FarmDto("workshops", "gc"), 38, Map.of("gt", 1024)));
         farmModelList.add(new FarmModel(new FarmDto("workshops", "bu"), 95, Map.of("cw", 1540)));
 //------------------------------------------------
-        farmModelList.add(new FarmModel(new FarmDto("workshops", "ap"), 33, Map.of(
+        /*farmModelList.add(new FarmModel(new FarmDto("workshops", "ap"), 33, Map.of(
                 "a", 1024,
                 "m", 512,
                 "cw", 256)));
@@ -73,7 +73,7 @@ public class FarmObjectProviderV2 {
                 "s", 1024)));
         farmModelList.add(new FarmModel(new FarmDto("workshops", "pf"), 34, Map.of(
                 "p", 512,
-                "bu", 256)));
+                "bu", 256)));*/
 //-------------------------------------------------------------------------------
         farmModelList.add(new FarmModel(new FarmDto("workshops", "bc"), 199, Map.of("h", 4100)));
         farmModelList.add(new FarmModel(new FarmDto("workshops", "bn"), 170, Map.of("sh", 1540)));
