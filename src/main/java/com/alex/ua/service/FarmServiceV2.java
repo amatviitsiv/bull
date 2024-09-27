@@ -3,37 +3,42 @@ package com.alex.ua.service;
 import com.alex.ua.client.FarmBullClientImpl;
 import com.alex.ua.client.farm.model.FarmCollectResponse;
 import com.alex.ua.client.farm.model.FarmModel;
+import com.alex.ua.provider.FarmObjectProviderV2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.alex.ua.util.ColorUtils.*;
-import static com.alex.ua.util.ColorUtils.GREEN;
+import static com.alex.ua.util.ColorUtils.RED;
+import static com.alex.ua.util.ColorUtils.RESET;
+import static com.alex.ua.util.ColorUtils.YELLOW;
 
 @Service
 public class FarmServiceV2 {
     private static final int MAX_PLOTS = 13; // Максимальное количество грядок
     private final AtomicInteger activePlots = new AtomicInteger(0); // Счётчик активных грядок
+    private final Set<String> activeCrops = new HashSet<>();
 
     @Autowired
     private FarmBullClientImpl farmBullClient;
 
-    public void runFarmEvent(FarmModel model, List<FarmModel> allFarmModels) {
+    public void runFarmEvent(FarmModel model, FarmObjectProviderV2 providerV2) {
         if (shouldCollect(model)) {
             collect(model);
-        } else if (hasFreePlots() && shouldStartNewEvent(model) && isEnoughResources(model, allFarmModels)) {
-            startNewEvent(model, allFarmModels);
+        } else if (canStartNewEvent(model) && shouldStartNewEvent(model, providerV2) && isEnoughResources(model, providerV2.getFarmModelList())) {
+            startNewEvent(model, providerV2.getFarmModelList());
         }
     }
 
-    private boolean hasFreePlots() {
-        return activePlots.get() < MAX_PLOTS;
+    private boolean canStartNewEvent(FarmModel model) {
+        return activePlots.get() < MAX_PLOTS && !activeCrops.contains(model.getFarmDto().getId());
     }
 
     private boolean isEnoughResources(FarmModel model, List<FarmModel> allFarmModels) {
@@ -42,7 +47,7 @@ public class FarmServiceV2 {
                     .filter(farm -> farm.getFarmDto().getId().equals(required.getKey()))
                     .findFirst()
                     .orElseThrow();
-            return farmModel.getStoredAmount() > required.getValue();
+            return farmModel.getStoredAmount() > (required.getValue() + 4000);
         });
     }
 
@@ -58,11 +63,20 @@ public class FarmServiceV2 {
         model.setStartDateTime(null);
         model.setStoredAmount(farmCollect.getResponseMap().get(model.getFarmDto().getId()));
         activePlots.decrementAndGet(); // Уменьшаем количество активных грядок после сбора урожая
+        activeCrops.remove(model.getFarmDto().getId());
         System.out.println(RED + LocalTime.now() + " COLLECTED " + RESET + " ");
     }
 
-    private boolean shouldStartNewEvent(FarmModel model) {
-        return Objects.isNull(model.getStartDateTime());
+    private boolean shouldStartNewEvent(FarmModel model, FarmObjectProviderV2 providerV2) {
+        String subtype = model.getSubtype();
+        boolean flag = true;
+        if (subtype.equals("factory")) {
+            flag = providerV2.isEligibleForFarming(model, 1024);
+        }
+        if (subtype.equals("kitchen")) {
+            flag = providerV2.isEligibleForFarming(model, 512);
+        }
+        return Objects.isNull(model.getStartDateTime()) && flag;
     }
 
     private void startNewEvent(FarmModel model, List<FarmModel> allFarmModels) {
@@ -70,6 +84,7 @@ public class FarmServiceV2 {
         logEvent(model, farmRun);
         model.setStartDateTime(LocalDateTime.now());
         System.out.println("active plots: " + activePlots.incrementAndGet()); // Увеличиваем количество активных грядок при старте нового события
+        activeCrops.add(model.getFarmDto().getId());
         if (!CollectionUtils.isEmpty(model.getRequired())) {
             model.getRequired().entrySet().forEach(required -> {
                 FarmModel farmModel = allFarmModels.stream()

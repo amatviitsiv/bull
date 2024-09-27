@@ -8,6 +8,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 public class FarmObjectProviderV2 {
@@ -16,69 +17,69 @@ public class FarmObjectProviderV2 {
 
     public FarmObjectProviderV2() {
         // -----------------------------------------
-        farmModelList.add(new FarmModel(new FarmDto("crops", "w"), 48, null));
-        farmModelList.add(new FarmModel(new FarmDto("crops", "p"), 22, null));
-        farmModelList.add(new FarmModel(new FarmDto("crops", "cr"), 47, null));
-        farmModelList.add(new FarmModel(new FarmDto("crops", "co"), 63, null));
-        farmModelList.add(new FarmModel(new FarmDto("crops", "t"), 63, null));
-        farmModelList.add(new FarmModel(new FarmDto("crops", "a"), 19, null));
-        farmModelList.add(new FarmModel(new FarmDto("crops", "s"), 26, null));
-        farmModelList.add(new FarmModel(new FarmDto("crops", "wh"), 54, null));
-        farmModelList.add(new FarmModel(new FarmDto("crops", "r"), 36, null));
-        farmModelList.add(new FarmModel(new FarmDto("crops", "b"), 61, null));
-        farmModelList.add(new FarmModel(new FarmDto("crops", "pc"), 47, null));
+        farmModelList.add(new FarmModel(new FarmDto("crops", "w"), 62, null, ""));
+        farmModelList.add(new FarmModel(new FarmDto("crops", "p"), 22, null, ""));
+        farmModelList.add(new FarmModel(new FarmDto("crops", "cr"), 63, null, ""));
+        farmModelList.add(new FarmModel(new FarmDto("crops", "co"), 63, null, ""));
+        farmModelList.add(new FarmModel(new FarmDto("crops", "t"), 85, null, ""));
+        farmModelList.add(new FarmModel(new FarmDto("crops", "a"), 26, null, ""));
+        farmModelList.add(new FarmModel(new FarmDto("crops", "s"), 35, null, ""));
+        farmModelList.add(new FarmModel(new FarmDto("crops", "wh"), 54, null, ""));
+        farmModelList.add(new FarmModel(new FarmDto("crops", "r"), 36, null, ""));
+        farmModelList.add(new FarmModel(new FarmDto("crops", "b"), 61, null, ""));
+        farmModelList.add(new FarmModel(new FarmDto("crops", "pc"), 62, null, ""));
 //-----------------------------------------------
-        farmModelList.add(new FarmModel(new FarmDto("animals", "ch"), 53, Map.of("co", 1200)));
-        farmModelList.add(new FarmModel(new FarmDto("animals", "cw"), 31, Map.of("w", 3070)));
-        farmModelList.add(new FarmModel(new FarmDto("animals", "pi"), 40, Map.of("p", 1020)));
-        farmModelList.add(new FarmModel(new FarmDto("animals", "gs"), 27, Map.of("co", 512)));
-        farmModelList.add(new FarmModel(new FarmDto("animals", "sh"), 101, Map.of("t", 6140)));
-        farmModelList.add(new FarmModel(new FarmDto("animals", "gt"), 46, Map.of("cr", 2050)));
-        farmModelList.add(new FarmModel(new FarmDto("animals", "h"), 67, Map.of("pc", 4100)));
+        farmModelList.add(new FarmModel(new FarmDto("animals", "ch"), 60, Map.of("co", 2048), "animals"));
+        farmModelList.add(new FarmModel(new FarmDto("animals", "cw"), 31, Map.of("w", 3070), "animals"));
+        farmModelList.add(new FarmModel(new FarmDto("animals", "pi"), 40, Map.of("p", 1020), "animals"));
+        farmModelList.add(new FarmModel(new FarmDto("animals", "gs"), 27, Map.of("co", 512), "animals"));
+        farmModelList.add(new FarmModel(new FarmDto("animals", "sh"), 101, Map.of("t", 6140), "animals"));
+        farmModelList.add(new FarmModel(new FarmDto("animals", "gt"), 46, Map.of("cr", 2050), "animals"));
+        farmModelList.add(new FarmModel(new FarmDto("animals", "h"), 67, Map.of("pc", 4100), "animals"));
 //----------------------------------------
-        farmModelList.add(new FarmModel(new FarmDto("workshops", "m"), 19, Map.of("w", 512)));
-        farmModelList.add(new FarmModel(new FarmDto("workshops", "sg"), 55, Map.of("co", 1024)));
-        farmModelList.add(new FarmModel(new FarmDto("workshops", "gc"), 38, Map.of("gt", 1024)));
-        farmModelList.add(new FarmModel(new FarmDto("workshops", "bu"), 95, Map.of("cw", 1540)));
+        farmModelList.add(new FarmModel(new FarmDto("workshops", "m"), 25, Map.of("w", 1024), "bakaly"));
+        farmModelList.add(new FarmModel(new FarmDto("workshops", "sg"), 55, Map.of("co", 1024), "bakaly"));
+        farmModelList.add(new FarmModel(new FarmDto("workshops", "gc"), 38, Map.of("gt", 50000), "bakaly"));
+        farmModelList.add(new FarmModel(new FarmDto("workshops", "bu"), 95, Map.of("cw", 1540), "bakaly"));
 //------------------------------------------------
-        /*farmModelList.add(new FarmModel(new FarmDto("workshops", "ap"), 33, Map.of(
-                "a", 1024,
-                "m", 512,
-                "cw", 256)));
-        farmModelList.add(new FarmModel(new FarmDto("workshops", "cb"), 15, Map.of(
-                "m", 256,
-                "cw", 256)));
-        farmModelList.add(new FarmModel(new FarmDto("workshops", "cac"), 62, Map.of(
-                "cr", 512,
+        farmModelList.add(new FarmModel(new FarmDto("workshops", "ap"), 40, Map.of(
+                "a", 2048,
                 "m", 1024,
-                "ch", 512)));
-        farmModelList.add(new FarmModel(new FarmDto("workshops", "ss"), 41, Map.of(
-                "bu", 512,
-                "m", 1280,
-                "s", 1024)));
-        farmModelList.add(new FarmModel(new FarmDto("workshops", "fs"), 68, Map.of(
-                "gt", 1024,
-                "cr", 1280,
-                "t", 512)));
-        farmModelList.add(new FarmModel(new FarmDto("workshops", "sm"), 33, Map.of(
-                "cw", 768,
-                "s", 512,
-                "sg", 256)));
-        farmModelList.add(new FarmModel(new FarmDto("workshops", "py"), 62, Map.of(
-                "pc", 512,
-                "gt", 256)));
-        farmModelList.add(new FarmModel(new FarmDto("workshops", "gb"), 58, Map.of(
-                "w", 1280,
-                "h", 256,
-                "s", 1024)));
-        farmModelList.add(new FarmModel(new FarmDto("workshops", "pf"), 34, Map.of(
-                "p", 512,
-                "bu", 256)));*/
+                "cw", 512), "kitchen"));
+        farmModelList.add(new FarmModel(new FarmDto("workshops", "cb"), 20, Map.of(
+                "m", 512,
+                "cw", 512), "kitchen"));
+        farmModelList.add(new FarmModel(new FarmDto("workshops", "cac"), 73, Map.of(
+                "cr", 1024,
+                "m", 2048,
+                "ch", 1024), "kitchen"));
+        farmModelList.add(new FarmModel(new FarmDto("workshops", "ss"), 49, Map.of(
+                "bu", 1024,
+                "m", 2560,
+                "s", 2048), "kitchen"));
+        farmModelList.add(new FarmModel(new FarmDto("workshops", "fs"), 81, Map.of(
+                "gt", 2048,
+                "cr", 2560,
+                "t", 1024), "kitchen"));
+        farmModelList.add(new FarmModel(new FarmDto("workshops", "sm"), 39, Map.of(
+                "cw", 1540,
+                "s", 1024,
+                "sg", 512), "kitchen"));
+        farmModelList.add(new FarmModel(new FarmDto("workshops", "py"), 73, Map.of(
+                "pc", 1024,
+                "gt", 512), "kitchen"));
+        farmModelList.add(new FarmModel(new FarmDto("workshops", "gb"), 69, Map.of(
+                "w", 2560,
+                "h", 512,
+                "s", 2048), "kitchen"));
+        farmModelList.add(new FarmModel(new FarmDto("workshops", "pf"), 41, Map.of(
+                "p", 1024,
+                "bu", 512), "kitchen"));
 //-------------------------------------------------------------------------------
-        farmModelList.add(new FarmModel(new FarmDto("workshops", "bc"), 199, Map.of("h", 4100)));
-        farmModelList.add(new FarmModel(new FarmDto("workshops", "bn"), 170, Map.of("sh", 1540)));
-        farmModelList.add(new FarmModel(new FarmDto("workshops", "tr"), 226, Map.of("sh", 3070)));
-        farmModelList.add(new FarmModel(new FarmDto("workshops", "so"), 155, Map.of("sh", 4100)));
+        farmModelList.add(new FarmModel(new FarmDto("workshops", "bc"), 199, Map.of("h", 4100), "factory"));
+        farmModelList.add(new FarmModel(new FarmDto("workshops", "bn"), 186, Map.of("sh", 3070), "factory"));
+        farmModelList.add(new FarmModel(new FarmDto("workshops", "tr"), 248, Map.of("sh", 6140), "factory"));
+        farmModelList.add(new FarmModel(new FarmDto("workshops", "so"), 155, Map.of("sh", 4100), "factory"));
     }
 
     /**
@@ -110,6 +111,24 @@ public class FarmObjectProviderV2 {
                 .filter(model -> model.getFarmDto().getId().equals(id))
                 .findFirst()
                 .orElse(null);
+    }
+
+    public List<FarmModel> findFarmModelsBySubtype(String subtype) {
+        return farmModelList.stream()
+                .filter(model -> model.getSubtype().equals(subtype))
+                .collect(Collectors.toList());
+    }
+
+    public boolean isEligibleForFarming(FarmModel model, int amount) {
+        AtomicBoolean eligible = new AtomicBoolean(true);
+        List<FarmModel> farmModelsBySubtype = findFarmModelsBySubtype(model.getSubtype());
+        farmModelsBySubtype.forEach(stored -> {
+            if (model.getStoredAmount() > stored.getStoredAmount()
+                    && (model.getStoredAmount() - stored.getStoredAmount()) >= amount) {
+                eligible.set(false);
+            }
+        });
+        return eligible.get();
     }
 
     /**

@@ -17,4 +17,5 @@ public class FarmModel {
     private LocalDateTime startDateTime;
     private int storedAmount = 0;
     private final Map<String, Integer> required;
+    private final String subtype;
 }

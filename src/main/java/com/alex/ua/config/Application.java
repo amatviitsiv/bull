@@ -40,11 +40,11 @@ public class Application {
         LinkedList<FarmModel> farmModelList = farmObjectProviderV2.getFarmModelList();
 
         do {
-            farmModelList.forEach(farmModel -> farmService.runFarmEvent(farmModel, farmObjectProviderV2.getFarmModelList()));
+            farmModelList.forEach(farmModel -> farmService.runFarmEvent(farmModel, farmObjectProviderV2));
 
             //burundiModels.forEach(bur -> deliveryService.runBurundiEvent(bur, farmObjectProviderV2.getFarmModelList()));
             //ugandaModels.forEach(uga -> deliveryService.runUgandaEvent(uga, farmObjectProviderV2.getFarmModelList()));
-            //laosModels.forEach(lao -> deliveryService.runLaosEvent(lao, farmObjectProviderV2.getFarmModelList()));
+            laosModels.forEach(lao -> deliveryService.runLaosEvent(lao, farmObjectProviderV2.getFarmModelList()));
             //moldovaModels.forEach(mol -> deliveryService.runMoldovaEvent(mol, farmObjectProviderV2.getFarmModelList()));
 
             try {
