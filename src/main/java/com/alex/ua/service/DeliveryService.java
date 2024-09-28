@@ -112,6 +112,7 @@ public class DeliveryService {
                     .filter(farm -> farm.getFarmDto().getId().equals(required.getId()))
                     .findFirst()
                     .orElseThrow();
+            System.out.println(GREEN + "DS: new event require: " + farmModel.getFarmDto().getId() + ": stored: " + farmModel.getStoredAmount() + " required: " + required.getAmount());
             return farmModel.getStoredAmount() > required.getAmount();
         });
     }

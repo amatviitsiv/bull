@@ -16,8 +16,8 @@ import java.util.concurrent.TimeUnit;
 public class WebClientConfiguration {
 
     private static final String BASE_URL = "https://api.bullishfarm.app";
-    private static final String X_APP_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MzUxNjMwNjgwLCJyZWZJZCI6IiIsInRhc2tGYWN" +
-            "0b3IiOjEwMiwiaWF0IjoxNzI3MDI5NzcwLCJleHAiOjE3Mjk2MjE3NzB9.p0OyfBMBWeXpSV4U1JUR-J1aB-CvBorBj04lzHLC2fs";
+    private static final String X_APP_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MzUxNjMwNjgwLCJyZWZJZCI6IiIsInRhc2tGYWN0b3IiO" +
+            "jEwMiwiaWF0IjoxNzI3NTQwMTA1LCJleHAiOjE3MzAxMzIxMDV9.S-ZoovIYjUQGO1tJxOy_wN3OxXt_wIqSJqqz1qfYJ9w";
     private static final String CONTENT_TYPE = "application/json";
     private static final int TIMEOUT = 1000;
 
