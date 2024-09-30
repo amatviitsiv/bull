@@ -4,6 +4,7 @@ import com.alex.ua.client.farm.booster.BoosterDto;
 import com.alex.ua.client.farm.model.FarmCollectResponse;
 import com.alex.ua.client.farm.model.FarmDto;
 import com.alex.ua.client.farm.model.RunResponse;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
