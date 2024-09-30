@@ -3,6 +3,7 @@ package com.alex.ua.client;
 import com.alex.ua.client.farm.booster.BoosterDto;
 import com.alex.ua.client.farm.model.FarmCollectResponse;
 import com.alex.ua.client.farm.model.FarmDto;
+import com.alex.ua.client.farm.model.RunResponse;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -21,7 +22,7 @@ public class FarmBullClientImpl {
 
     private final WebClient webClient;
 
-    public String farmRun(FarmDto dto) {
+    public RunResponse farmRun(FarmDto dto) {
         return webClient
                 .post()
                 .uri(FARM_RUN_URL)
@@ -37,9 +38,8 @@ public class FarmBullClientImpl {
                     return response.bodyToMono(String.class)
                             .flatMap(body -> Mono.error(new RuntimeException("Server error: " + body)));
                 })
-                .bodyToMono(String.class)
+                .bodyToMono(RunResponse.class)
                 .block();
-
     }
 
     public FarmCollectResponse farmCollect(FarmDto dto) {

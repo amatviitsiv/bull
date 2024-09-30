@@ -3,6 +3,7 @@ package com.alex.ua.config;
 import io.netty.channel.ChannelOption;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 import io.netty.handler.timeout.WriteTimeoutHandler;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
@@ -16,10 +17,11 @@ import java.util.concurrent.TimeUnit;
 public class WebClientConfiguration {
 
     private static final String BASE_URL = "https://api.bullishfarm.app";
-    private static final String X_APP_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MzUxNjMwNjgwLCJyZWZJZCI6IiIsInRhc2tGYWN0b3IiO" +
-            "jEwMiwiaWF0IjoxNzI3NTQwMTA1LCJleHAiOjE3MzAxMzIxMDV9.S-ZoovIYjUQGO1tJxOy_wN3OxXt_wIqSJqqz1qfYJ9w";
     private static final String CONTENT_TYPE = "application/json";
     private static final int TIMEOUT = 1000;
+
+    @Value("${x.app.token}")
+    private String xAppToken;
 
     @Bean
     public WebClient webClient() {
@@ -34,7 +36,7 @@ public class WebClientConfiguration {
         return WebClient.builder()
                 .baseUrl(BASE_URL)
                 .defaultHeader("content-type", CONTENT_TYPE)
-                .defaultHeader("x-app-token", X_APP_TOKEN)
+                .defaultHeader("x-app-token", xAppToken)
                 .clientConnector(new ReactorClientHttpConnector(HttpClient.from(tcpClient)))
                 .build();
     }

@@ -1,6 +1,5 @@
 package com.alex.ua.client.delivery.model.moldova;
 
-import com.alex.ua.client.delivery.model.laos.LaosCollectResponse;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.util.List;

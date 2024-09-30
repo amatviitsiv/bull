@@ -1,24 +1,27 @@
 package com.alex.ua.service;
 
+import com.alex.ua.client.AuthClient;
 import com.alex.ua.client.FarmBullClientImpl;
+import com.alex.ua.client.auth.AuthenticateResponse;
 import com.alex.ua.client.farm.model.FarmCollectResponse;
 import com.alex.ua.client.farm.model.FarmModel;
+import com.alex.ua.client.farm.model.RunResponse;
 import com.alex.ua.provider.FarmObjectProviderV2;
+import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.time.ZoneId;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.alex.ua.util.ColorUtils.RED;
-import static com.alex.ua.util.ColorUtils.RESET;
-import static com.alex.ua.util.ColorUtils.YELLOW;
+import static com.alex.ua.util.ColorUtils.*;
 
 @Service
 public class FarmServiceV2 {
@@ -28,6 +31,26 @@ public class FarmServiceV2 {
 
     @Autowired
     private FarmBullClientImpl farmBullClient;
+    @Autowired
+    private AuthClient authClient;
+
+    public void initializeFarm(FarmObjectProviderV2 providerV2) {
+        AuthenticateResponse authResponse = authClient.authenticate();
+        Map<String, Object> user = authResponse.getUser();
+        LinkedList<FarmModel> farmModelList = providerV2.getFarmModelList();
+        System.out.println(PURPLE + " Initializing Farm. " + RESET);
+        farmModelList.forEach(model -> {
+            model.setStoredAmount((int) user.getOrDefault(model.getFarmDto().getId(), 0));
+            Object collect = user.get(model.getFarmDto().getId() + "e");
+            if (Objects.nonNull(collect) && (int) collect != 0) {
+                model.setCollectDateTime(LocalDateTime.ofInstant(Instant.ofEpochSecond((int) collect), ZoneId.systemDefault()));
+                activePlots.incrementAndGet();
+                activeCrops.add(model.getFarmDto().getId());
+            }
+            System.out.println(PURPLE + " " + model.getFarmDto().getId() + ": " + model.getStoredAmount() + " " + model.getCollectDateTime() + " " + RESET);
+        });
+        System.out.println(PURPLE + " Finished initializing Farm. " + RESET);
+    }
 
     public void runFarmEvent(FarmModel model, FarmObjectProviderV2 providerV2) {
         if (shouldCollect(model)) {
@@ -52,15 +75,15 @@ public class FarmServiceV2 {
     }
 
     private boolean shouldCollect(FarmModel model) {
-        return Objects.nonNull(model.getStartDateTime())
-                && model.getStartDateTime().plusMinutes(model.getGrowTime()).isBefore(LocalDateTime.now());
+        return Objects.nonNull(model.getCollectDateTime())
+                && model.getCollectDateTime().plusSeconds(10).isBefore(LocalDateTime.now());
     }
 
     private void collect(FarmModel model) {
         System.out.println("ATTEMPT to collect: " + model.getFarmDto().getId());
         FarmCollectResponse farmCollect = farmBullClient.farmCollect(model.getFarmDto());
         logEvent(model, farmCollect);
-        model.setStartDateTime(null);
+        model.setCollectDateTime(null);
         model.setStoredAmount(farmCollect.getResponseMap().get(model.getFarmDto().getId()));
         activePlots.decrementAndGet(); // Уменьшаем количество активных грядок после сбора урожая
         activeCrops.remove(model.getFarmDto().getId());
@@ -76,13 +99,15 @@ public class FarmServiceV2 {
         if (subtype.equals("kitchen")) {
             flag = providerV2.isEligibleForFarming(model, 512);
         }
-        return Objects.isNull(model.getStartDateTime()) && flag;
+        return Objects.isNull(model.getCollectDateTime()) && flag;
     }
 
     private void startNewEvent(FarmModel model, List<FarmModel> allFarmModels) {
-        String farmRun = farmBullClient.farmRun(model.getFarmDto());
-        logEvent(model, farmRun);
-        model.setStartDateTime(LocalDateTime.now());
+        RunResponse farmRun = farmBullClient.farmRun(model.getFarmDto());
+        logEvent(model, farmRun.toString());
+        model.setCollectDateTime(LocalDateTime.ofInstant(
+                Instant.ofEpochSecond((int) farmRun.getProperties()
+                        .get(model.getFarmDto().getId() + "e")), ZoneId.systemDefault()));
         System.out.println("active plots: " + activePlots.incrementAndGet()); // Увеличиваем количество активных грядок при старте нового события
         activeCrops.add(model.getFarmDto().getId());
         if (!CollectionUtils.isEmpty(model.getRequired())) {
