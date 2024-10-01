@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * The type Farm model.
@@ -17,7 +18,7 @@ public class FarmModel {
     private final FarmDto farmDto;
     private LocalDateTime collectDateTime;
     private final Map<String, Integer> required;
-    private final String subtype;
+    private final Set<String> subtype;
     private int storedAmount;
 
 }

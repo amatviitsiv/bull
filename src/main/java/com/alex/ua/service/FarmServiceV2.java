@@ -7,21 +7,26 @@ import com.alex.ua.client.farm.model.FarmCollectResponse;
 import com.alex.ua.client.farm.model.FarmModel;
 import com.alex.ua.client.farm.model.RunResponse;
 import com.alex.ua.provider.FarmObjectProviderV2;
-import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
-import java.util.*;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.alex.ua.util.ColorUtils.*;
+import static com.alex.ua.util.ColorUtils.PURPLE;
+import static com.alex.ua.util.ColorUtils.RED;
+import static com.alex.ua.util.ColorUtils.RESET;
+import static com.alex.ua.util.ColorUtils.YELLOW;
 
 @Service
 public class FarmServiceV2 {
@@ -91,13 +96,9 @@ public class FarmServiceV2 {
     }
 
     private boolean shouldStartNewEvent(FarmModel model, FarmObjectProviderV2 providerV2) {
-        String subtype = model.getSubtype();
         boolean flag = true;
-        if (subtype.equals("factory")) {
+        if (!CollectionUtils.isEmpty(model.getSubtype())) {
             flag = providerV2.isEligibleForFarming(model, 1024);
-        }
-        if (subtype.equals("kitchen")) {
-            flag = providerV2.isEligibleForFarming(model, 512);
         }
         return Objects.isNull(model.getCollectDateTime()) && flag;
     }
