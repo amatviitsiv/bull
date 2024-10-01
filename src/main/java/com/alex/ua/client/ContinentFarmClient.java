@@ -1,17 +1,20 @@
 package com.alex.ua.client;
 
 import com.alex.ua.client.delivery.model.DeliveryDto;
-import com.alex.ua.client.delivery.model.DeliveryModel;
 import com.alex.ua.client.delivery.model.burundi.BurundiCollectResponse;
 import com.alex.ua.client.delivery.model.laos.LaosCollectResponse;
 import com.alex.ua.client.delivery.model.moldova.MoldovaCollectResponse;
 import com.alex.ua.client.delivery.model.uganda.UgandaCollectResponse;
-import com.alex.ua.client.farm.model.FarmDto;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientRequestException;
 import reactor.core.publisher.Mono;
+import reactor.util.retry.Retry;
+
+import java.net.SocketException;
+import java.time.Duration;
 
 @Service
 @AllArgsConstructor
@@ -39,6 +42,13 @@ public class ContinentFarmClient {
                             .flatMap(body -> Mono.error(new RuntimeException("Server error: " + body)));
                 })
                 .bodyToMono(String.class)
+                .retryWhen(Retry
+                        .fixedDelay(3, Duration.ofSeconds(5)) // Retry up to 3 times with a 2-second delay
+                        .filter(throwable -> throwable instanceof WebClientRequestException
+                                || throwable instanceof SocketException) // Retry only on these exceptions
+                        .onRetryExhaustedThrow((retryBackoffSpec, retrySignal) ->
+                                new RuntimeException("Max retries exhausted", retrySignal.failure()))
+                )
                 .block();
 
     }
@@ -60,6 +70,13 @@ public class ContinentFarmClient {
                             .flatMap(body -> Mono.error(new RuntimeException("Server error: " + body)));
                 })
                 .bodyToMono(BurundiCollectResponse.class)
+                .retryWhen(Retry
+                        .fixedDelay(3, Duration.ofSeconds(5)) // Retry up to 3 times with a 2-second delay
+                        .filter(throwable -> throwable instanceof WebClientRequestException
+                                || throwable instanceof SocketException) // Retry only on these exceptions
+                        .onRetryExhaustedThrow((retryBackoffSpec, retrySignal) ->
+                                new RuntimeException("Max retries exhausted", retrySignal.failure()))
+                )
                 .block();
     }
 
@@ -80,6 +97,13 @@ public class ContinentFarmClient {
                             .flatMap(body -> Mono.error(new RuntimeException("Server error: " + body)));
                 })
                 .bodyToMono(LaosCollectResponse.class)
+                .retryWhen(Retry
+                        .fixedDelay(3, Duration.ofSeconds(5)) // Retry up to 3 times with a 2-second delay
+                        .filter(throwable -> throwable instanceof WebClientRequestException
+                                || throwable instanceof SocketException) // Retry only on these exceptions
+                        .onRetryExhaustedThrow((retryBackoffSpec, retrySignal) ->
+                                new RuntimeException("Max retries exhausted", retrySignal.failure()))
+                )
                 .block();
     }
 
@@ -100,6 +124,13 @@ public class ContinentFarmClient {
                             .flatMap(body -> Mono.error(new RuntimeException("Server error: " + body)));
                 })
                 .bodyToMono(UgandaCollectResponse.class)
+                .retryWhen(Retry
+                        .fixedDelay(3, Duration.ofSeconds(5)) // Retry up to 3 times with a 2-second delay
+                        .filter(throwable -> throwable instanceof WebClientRequestException
+                                || throwable instanceof SocketException) // Retry only on these exceptions
+                        .onRetryExhaustedThrow((retryBackoffSpec, retrySignal) ->
+                                new RuntimeException("Max retries exhausted", retrySignal.failure()))
+                )
                 .block();
     }
 
@@ -120,6 +151,13 @@ public class ContinentFarmClient {
                             .flatMap(body -> Mono.error(new RuntimeException("Server error: " + body)));
                 })
                 .bodyToMono(MoldovaCollectResponse.class)
+                .retryWhen(Retry
+                        .fixedDelay(3, Duration.ofSeconds(5)) // Retry up to 3 times with a 2-second delay
+                        .filter(throwable -> throwable instanceof WebClientRequestException
+                                || throwable instanceof SocketException) // Retry only on these exceptions
+                        .onRetryExhaustedThrow((retryBackoffSpec, retrySignal) ->
+                                new RuntimeException("Max retries exhausted", retrySignal.failure()))
+                )
                 .block();
     }
 }
