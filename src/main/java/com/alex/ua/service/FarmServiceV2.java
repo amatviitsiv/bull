@@ -136,7 +136,7 @@ public class FarmServiceV2 {
     }
 
     private void attemptLogEvent(FarmModel model, String action) {
-        System.out.println("ATTEMPT to "+ action+ ": " + model.getFarmDto().getId());
+        System.out.println(RED + "ATTEMPT to " + action + ": " + model.getFarmDto().getId());
     }
 }
 
