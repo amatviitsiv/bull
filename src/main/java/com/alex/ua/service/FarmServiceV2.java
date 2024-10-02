@@ -85,7 +85,7 @@ public class FarmServiceV2 {
     }
 
     private void collect(FarmModel model) {
-        System.out.println("ATTEMPT to collect: " + model.getFarmDto().getId());
+        attemptLogEvent(model, "collect");
         FarmCollectResponse farmCollect = farmBullClient.farmCollect(model.getFarmDto());
         logEvent(model, farmCollect);
         model.setCollectDateTime(null);
@@ -104,6 +104,7 @@ public class FarmServiceV2 {
     }
 
     private void startNewEvent(FarmModel model, List<FarmModel> allFarmModels) {
+        attemptLogEvent(model, "start");
         RunResponse farmRun = farmBullClient.farmRun(model.getFarmDto());
         logEvent(model, farmRun.toString());
         model.setCollectDateTime(LocalDateTime.ofInstant(
@@ -132,6 +133,10 @@ public class FarmServiceV2 {
     private void logEvent(FarmModel model, String response) {
         System.out.println(RED + LocalTime.now() + " STARTED: " + model.getFarmDto().getType() + " id: " + model.getFarmDto().getId() + " " + RESET + " ");
         System.out.println(RED + response + RESET + " ");
+    }
+
+    private void attemptLogEvent(FarmModel model, String action) {
+        System.out.println("ATTEMPT to "+ action+ ": " + model.getFarmDto().getId());
     }
 }
 
