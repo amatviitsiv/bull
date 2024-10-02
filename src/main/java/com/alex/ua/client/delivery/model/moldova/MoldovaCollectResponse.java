@@ -12,7 +12,7 @@ public class MoldovaCollectResponse {
     private int bs;
     private int lv;
     private int ctc;
-    private List<MoldovaCollectResponse.MdrqItem> mdrq;
+    private List<MdrqItem> mdrq;
 
     // Getters and Setters
 
@@ -48,28 +48,28 @@ public class MoldovaCollectResponse {
         this.ctc = ctc;
     }
 
-    public List<MoldovaCollectResponse.MdrqItem> getMdrq() {
+    public List<MdrqItem> getMdrq() {
         return mdrq;
     }
 
-    public void setMdrq(List<MoldovaCollectResponse.MdrqItem> mdrq) {
+    public void setMdrq(List<MdrqItem> mdrq) {
         this.mdrq = mdrq;
     }
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class MdrqItem {
 
-        private MoldovaCollectResponse.Result result;
+        private Result result;
         private Map<String, Integer> requires;
         private Long mde;
 
         // Getters and Setters
 
-        public MoldovaCollectResponse.Result getResult() {
+        public Result getResult() {
             return result;
         }
 
-        public void setResult(MoldovaCollectResponse.Result result) {
+        public void setResult(Result result) {
             this.result = result;
         }
 

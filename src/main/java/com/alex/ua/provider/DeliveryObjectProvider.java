@@ -26,9 +26,9 @@ public class DeliveryObjectProvider {
         ugandaModels.add(new DeliveryModel(new DeliveryDto("ug", 1), 342));
         ugandaModels.add(new DeliveryModel(new DeliveryDto("ug", 2), 342));
 
-        laosModels.add(new DeliveryModel(new DeliveryDto("la", 0), 152));
-        laosModels.add(new DeliveryModel(new DeliveryDto("la", 1), 152));
-        laosModels.add(new DeliveryModel(new DeliveryDto("la", 2), 152));
+        laosModels.add(new DeliveryModel(new DeliveryDto("la", 0), 342));
+        laosModels.add(new DeliveryModel(new DeliveryDto("la", 1), 342));
+        laosModels.add(new DeliveryModel(new DeliveryDto("la", 2), 342));
 
         moldovaModels.add(new DeliveryModel(new DeliveryDto("md", 0), 406));
         moldovaModels.add(new DeliveryModel(new DeliveryDto("md", 1), 406));
