@@ -70,7 +70,7 @@ public class FarmServiceV2 {
     }
 
     private boolean isEnoughResources(FarmModel model, List<FarmModel> allFarmModels) {
-        return CollectionUtils.isEmpty(model.getRequired()) || model.getRequired().entrySet().stream().allMatch(required -> {
+       return CollectionUtils.isEmpty(model.getRequired()) || model.getRequired().entrySet().stream().allMatch(required -> {
             FarmModel farmModel = allFarmModels.stream()
                     .filter(farm -> farm.getFarmDto().getId().equals(required.getKey()))
                     .findFirst()
@@ -136,7 +136,7 @@ public class FarmServiceV2 {
     }
 
     private void attemptLogEvent(FarmModel model, String action) {
-        System.out.println(RED + "ATTEMPT to " + action + ": " + model.getFarmDto().getId());
+        System.out.println("ATTEMPT to "+ action+ ": " + model.getFarmDto().getId());
     }
 }
 
