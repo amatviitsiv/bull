@@ -16,5 +16,5 @@ public class DeliveryModel {
     private final DeliveryDto deliveryDto;
     private List<RequiredAttribute> required = new ArrayList<>();
     private final long deliveryTime;
-    private LocalDateTime startDateTime = LocalDateTime.now();
+    private LocalDateTime collectDateTime;
 }

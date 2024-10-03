@@ -3,10 +3,19 @@ package com.alex.ua.service;
 import com.alex.ua.client.AuthClient;
 import com.alex.ua.client.FarmBullClientImpl;
 import com.alex.ua.client.auth.AuthenticateResponse;
+import com.alex.ua.client.delivery.model.DeliveryModel;
+import com.alex.ua.client.delivery.model.RequiredAttribute;
+import com.alex.ua.client.delivery.model.burundi.BurundiCollectResponse;
+import com.alex.ua.client.delivery.model.laos.LaosCollectResponse;
+import com.alex.ua.client.delivery.model.moldova.MoldovaCollectResponse;
+import com.alex.ua.client.delivery.model.uganda.UgandaCollectResponse;
 import com.alex.ua.client.farm.model.FarmCollectResponse;
 import com.alex.ua.client.farm.model.FarmModel;
 import com.alex.ua.client.farm.model.RunResponse;
+import com.alex.ua.provider.DeliveryObjectProvider;
 import com.alex.ua.provider.FarmObjectProviderV2;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -38,8 +47,10 @@ public class FarmServiceV2 {
     private FarmBullClientImpl farmBullClient;
     @Autowired
     private AuthClient authClient;
+    @Autowired
+    private ObjectMapper objectMapper;
 
-    public void initializeFarm(FarmObjectProviderV2 providerV2) {
+    public void initializeFarm(FarmObjectProviderV2 providerV2, DeliveryObjectProvider deliveryObjectProvider) {
         AuthenticateResponse authResponse = authClient.authenticate();
         Map<String, Object> user = authResponse.getUser();
         LinkedList<FarmModel> farmModelList = providerV2.getFarmModelList();
@@ -54,7 +65,93 @@ public class FarmServiceV2 {
             }
             System.out.println(PURPLE + " " + model.getFarmDto().getId() + ": " + model.getStoredAmount() + " " + model.getCollectDateTime() + " " + RESET);
         });
+
+        fillBurundiDeliveryState(user, deliveryObjectProvider);
+        fillUgandaDeliveryState(user, deliveryObjectProvider);
+        fillLaosDeliveryState(user, deliveryObjectProvider);
+        fillMoldovaDeliveryState(user, deliveryObjectProvider);
         System.out.println(PURPLE + " Finished initializing Farm. " + RESET);
+    }
+
+    private void fillLaosDeliveryState(Map<String, Object> user, DeliveryObjectProvider deliveryObjectProvider) {
+        List<LaosCollectResponse.LarqItem> larq;
+        Object larqObject = user.get("larq");
+
+        if (larqObject instanceof List) {
+            larq = objectMapper.convertValue(larqObject, new TypeReference<>() {});
+            LinkedList<DeliveryModel> laosModels = deliveryObjectProvider.getLaosModels();
+            laosModels.forEach(model -> {
+                LaosCollectResponse.LarqItem larqItem = larq.get(model.getDeliveryDto().getRid());
+                Map<String, Integer> requires = larqItem.getRequires();
+                fillRequires(requires, model);
+                if (Objects.nonNull(larqItem.getLae())) {
+                    model.setCollectDateTime(LocalDateTime.ofInstant(Instant.ofEpochSecond(larqItem.getLae()), ZoneId.systemDefault()));
+                }
+            });
+        }
+    }
+
+    private void fillBurundiDeliveryState(Map<String, Object> user, DeliveryObjectProvider deliveryObjectProvider) {
+        List<BurundiCollectResponse.BrrqItem> brrq;
+        Object brrqObj = user.get("brrq");
+
+        // Check if the 'brrq' field is present and is a List
+        if (brrqObj instanceof List) {
+            // Use ObjectMapper to convert the list of maps to a list of BrrqItems
+            brrq = objectMapper.convertValue(brrqObj, new TypeReference<>() {});
+            LinkedList<DeliveryModel> laosModels = deliveryObjectProvider.getBurundiModels();
+            laosModels.forEach(model -> {
+                BurundiCollectResponse.BrrqItem brrqItem = brrq.get(model.getDeliveryDto().getRid());
+                Map<String, Integer> requires = brrqItem.getRequires();
+                fillRequires(requires, model);
+                if (Objects.nonNull(brrqItem.getBre())) {
+                    model.setCollectDateTime(LocalDateTime.ofInstant(Instant.ofEpochSecond(brrqItem.getBre()), ZoneId.systemDefault()));
+                }
+            });
+        }
+    }
+
+    private void fillMoldovaDeliveryState(Map<String, Object> user, DeliveryObjectProvider deliveryObjectProvider) {
+        List<MoldovaCollectResponse.MdrqItem> mdrq;
+        Object mdrqObject = user.get("mdrq");
+
+        if (mdrqObject instanceof List) {
+            mdrq = objectMapper.convertValue(mdrqObject, new TypeReference<>() {});
+            LinkedList<DeliveryModel> moldovaModels = deliveryObjectProvider.getMoldovaModels();
+            moldovaModels.forEach(model -> {
+                MoldovaCollectResponse.MdrqItem mdrqItem = mdrq.get(model.getDeliveryDto().getRid());
+                Map<String, Integer> requires = mdrqItem.getRequires();
+                fillRequires(requires, model);
+                if (Objects.nonNull(mdrqItem.getMde())) {
+                    model.setCollectDateTime(LocalDateTime.ofInstant(Instant.ofEpochSecond(mdrqItem.getMde()), ZoneId.systemDefault()));
+                }
+            });
+        }
+    }
+
+    private void fillUgandaDeliveryState(Map<String, Object> user, DeliveryObjectProvider deliveryObjectProvider) {
+        List<UgandaCollectResponse.UgrqItem> ugrq;
+        Object ugrqObject = user.get("ugrq");
+
+        if (ugrqObject instanceof List) {
+            ugrq = objectMapper.convertValue(ugrqObject, new TypeReference<>() {});
+            LinkedList<DeliveryModel> ugandaModels = deliveryObjectProvider.getUgandaModels();
+            ugandaModels.forEach(model -> {
+                UgandaCollectResponse.UgrqItem ugrqItem = ugrq.get(model.getDeliveryDto().getRid());
+                Map<String, Integer> requires = ugrqItem.getRequires();
+                fillRequires(requires, model);
+                if (Objects.nonNull(ugrqItem.getUge())) {
+                    model.setCollectDateTime(LocalDateTime.ofInstant(Instant.ofEpochSecond(ugrqItem.getUge()), ZoneId.systemDefault()));
+                }
+            });
+        }
+        }
+
+    private void fillRequires(Map<String, Integer> requires, DeliveryModel model) {
+        model.getRequired().clear();
+        for (Map.Entry<String, Integer> entry : requires.entrySet()) {
+            model.getRequired().add(new RequiredAttribute(entry.getKey(), entry.getValue()));
+        }
     }
 
     public void runFarmEvent(FarmModel model, FarmObjectProviderV2 providerV2) {

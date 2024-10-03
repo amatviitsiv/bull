@@ -38,7 +38,7 @@ public class Application {
 
         FarmObjectProviderV2 farmObjectProviderV2 = new FarmObjectProviderV2();
         LinkedList<FarmModel> farmModelList = farmObjectProviderV2.getFarmModelList();
-        farmService.initializeFarm(farmObjectProviderV2);
+        farmService.initializeFarm(farmObjectProviderV2, deliveryObjectProvider);
 
         do {
             farmModelList.forEach(farmModel -> farmService.runFarmEvent(farmModel, farmObjectProviderV2));

@@ -8,11 +8,16 @@ import com.alex.ua.client.delivery.model.laos.LaosCollectResponse;
 import com.alex.ua.client.delivery.model.moldova.MoldovaCollectResponse;
 import com.alex.ua.client.delivery.model.uganda.UgandaCollectResponse;
 import com.alex.ua.client.farm.model.FarmModel;
+import com.alex.ua.client.farm.model.RunResponse;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -25,12 +30,14 @@ public class DeliveryService {
 
     @Autowired
     private ContinentFarmClient continentFarmClient;
+    @Autowired
+    private ObjectMapper objectMapper;
 
     public void runUgandaEvent(DeliveryModel model, List<FarmModel> allFarmModels) {
         if (shouldCollect(model)) {
             collectUganda(model);
         } else if (shouldStartNewEvent(model, allFarmModels)) {
-            startNewEvent(model, allFarmModels);
+            startNewUgandaEvent(model, allFarmModels);
         }
     }
 
@@ -38,7 +45,7 @@ public class DeliveryService {
         if (shouldCollect(model)) {
             collectLaos(model);
         } else if (shouldStartNewEvent(model, allFarmModels)) {
-            startNewEvent(model, allFarmModels);
+            startNewLaosEvent(model, allFarmModels);
         }
     }
 
@@ -46,7 +53,7 @@ public class DeliveryService {
         if (shouldCollect(model)) {
             collectBurundi(model);
         } else if (shouldStartNewEvent(model, allFarmModels)) {
-            startNewEvent(model, allFarmModels);
+            startNewBurundiEvent(model, allFarmModels);
         }
     }
 
@@ -54,14 +61,14 @@ public class DeliveryService {
         if (shouldCollect(model)) {
             collectMoldova(model);
         } else if (shouldStartNewEvent(model, allFarmModels)) {
-            startNewEvent(model, allFarmModels);
+            startNewMoldovaEvent(model, allFarmModels);
         }
     }
 
     private void collectUganda(DeliveryModel model) {
         UgandaCollectResponse ugandaCollectResponse = continentFarmClient.ugandaCollect(model.getDeliveryDto());
         System.out.println(GREEN + "collected uganda " + RESET);
-        model.setStartDateTime(null);
+        model.setCollectDateTime(null);
         UgandaCollectResponse.UgrqItem ugrqItem = ugandaCollectResponse.getUgrq().get(model.getDeliveryDto().getRid());
         Map<String, Integer> requires = ugrqItem.getRequires();
         model.getRequired().clear();
@@ -73,7 +80,7 @@ public class DeliveryService {
     private void collectLaos(DeliveryModel model) {
         LaosCollectResponse laosCollectResponse = continentFarmClient.laosCollect(model.getDeliveryDto());
         System.out.println(GREEN + "collected laos " + RESET);
-        model.setStartDateTime(null);
+        model.setCollectDateTime(null);
         LaosCollectResponse.LarqItem ugrqItem = laosCollectResponse.getLarq().get(model.getDeliveryDto().getRid());
         Map<String, Integer> requires = ugrqItem.getRequires();
         model.getRequired().clear();
@@ -85,7 +92,7 @@ public class DeliveryService {
     private void collectBurundi(DeliveryModel model) {
         BurundiCollectResponse burundiCollectResponse = continentFarmClient.burundiCollect(model.getDeliveryDto());
         System.out.println(GREEN + "collected burundi " + RESET);
-        model.setStartDateTime(null);
+        model.setCollectDateTime(null);
         BurundiCollectResponse.BrrqItem ugrqItem = burundiCollectResponse.getBrrq().get(model.getDeliveryDto().getRid());
         Map<String, Integer> requires = ugrqItem.getRequires();
         model.getRequired().clear();
@@ -97,7 +104,7 @@ public class DeliveryService {
     private void collectMoldova(DeliveryModel model) {
         MoldovaCollectResponse moldovaCollectResponse = continentFarmClient.moldovaCollect(model.getDeliveryDto());
         System.out.println(GREEN + "collected moldova " + RESET);
-        model.setStartDateTime(null);
+        model.setCollectDateTime(null);
         MoldovaCollectResponse.MdrqItem ugrqItem = moldovaCollectResponse.getMdrq().get(model.getDeliveryDto().getRid());
         Map<String, Integer> requires = ugrqItem.getRequires();
         model.getRequired().clear();
@@ -107,7 +114,7 @@ public class DeliveryService {
     }
 
     private boolean shouldStartNewEvent(DeliveryModel model, List<FarmModel> allFarmModels) {
-        return Objects.isNull(model.getStartDateTime()) && model.getRequired().stream().allMatch(required -> {
+        return Objects.isNull(model.getCollectDateTime()) && model.getRequired().stream().allMatch(required -> {
             FarmModel farmModel = allFarmModels.stream()
                     .filter(farm -> farm.getFarmDto().getId().equals(required.getId()))
                     .findFirst()
@@ -117,10 +124,57 @@ public class DeliveryService {
         });
     }
 
-    private void startNewEvent(DeliveryModel model, List<FarmModel> allFarmModels) {
-        continentFarmClient.farmRun(model.getDeliveryDto());
+    private void startNewBurundiEvent(DeliveryModel model, List<FarmModel> allFarmModels) {
+        RunResponse runResponse = continentFarmClient.farmRun(model.getDeliveryDto());
+        Object brrqObj = runResponse.getProperties().get("brrq");
+
+        // Check if the 'brrq' field is present and is a List
+        if (brrqObj instanceof List) {
+            // Use ObjectMapper to convert the list of maps to a list of BrrqItems
+            List<BurundiCollectResponse.BrrqItem> brrq = objectMapper.convertValue(brrqObj, new TypeReference<>() {
+            });
+            model.setCollectDateTime(LocalDateTime.ofInstant(Instant.ofEpochSecond(brrq.get(model.getDeliveryDto().getRid()).getBre()), ZoneId.systemDefault()));
+            fillRequiredResources(model, allFarmModels);
+        }
+    }
+
+    private void startNewUgandaEvent(DeliveryModel model, List<FarmModel> allFarmModels) {
+        RunResponse runResponse = continentFarmClient.farmRun(model.getDeliveryDto());
+        Object ugrqObject = runResponse.getProperties().get("ugrq");
+
+        if (ugrqObject instanceof List) {
+            List<UgandaCollectResponse.UgrqItem> ugrq = objectMapper.convertValue(ugrqObject, new TypeReference<>() {
+            });
+            model.setCollectDateTime(LocalDateTime.ofInstant(Instant.ofEpochSecond(ugrq.get(model.getDeliveryDto().getRid()).getUge()), ZoneId.systemDefault()));
+            fillRequiredResources(model, allFarmModels);
+        }
+    }
+
+    private void startNewLaosEvent(DeliveryModel model, List<FarmModel> allFarmModels) {
+        RunResponse runResponse = continentFarmClient.farmRun(model.getDeliveryDto());
+        Object larqObject = runResponse.getProperties().get("larq");
+
+        if (larqObject instanceof List) {
+            List<LaosCollectResponse.LarqItem> larq = objectMapper.convertValue(larqObject, new TypeReference<>() {});
+            model.setCollectDateTime(LocalDateTime.ofInstant(Instant.ofEpochSecond(larq.get(model.getDeliveryDto().getRid()).getLae()), ZoneId.systemDefault()));
+            fillRequiredResources(model, allFarmModels);
+        }
+    }
+
+    private void startNewMoldovaEvent(DeliveryModel model, List<FarmModel> allFarmModels) {
+        RunResponse runResponse = continentFarmClient.farmRun(model.getDeliveryDto());
+        Object mdrqObject = runResponse.getProperties().get("mdrq");
+
+        if (mdrqObject instanceof List) {
+            List<MoldovaCollectResponse.MdrqItem> mdrq = objectMapper.convertValue(mdrqObject, new TypeReference<>() {
+            });
+            model.setCollectDateTime(LocalDateTime.ofInstant(Instant.ofEpochSecond(mdrq.get(model.getDeliveryDto().getRid()).getMde()), ZoneId.systemDefault()));
+            fillRequiredResources(model, allFarmModels);
+        }
+    }
+
+    private static void fillRequiredResources(DeliveryModel model, List<FarmModel> allFarmModels) {
         System.out.println(GREEN + "DS: " + LocalTime.now() + " started delivery for: " + model.getDeliveryDto().getId() + " " + model.getDeliveryDto().getRid() + RESET);
-        model.setStartDateTime(LocalDateTime.now());
         model.getRequired().forEach(required -> {
             FarmModel farmModel = allFarmModels.stream()
                     .filter(farm -> farm.getFarmDto().getId().equals(required.getId()))
@@ -133,8 +187,8 @@ public class DeliveryService {
     }
 
     private boolean shouldCollect(DeliveryModel model) {
-        return Objects.nonNull(model.getStartDateTime())
-                && model.getStartDateTime().plusMinutes(model.getDeliveryTime()).isBefore(LocalDateTime.now());
+        return Objects.nonNull(model.getCollectDateTime())
+                && model.getCollectDateTime().plusSeconds(10).isBefore(LocalDateTime.now());
     }
 
 

@@ -5,6 +5,7 @@ import com.alex.ua.client.delivery.model.burundi.BurundiCollectResponse;
 import com.alex.ua.client.delivery.model.laos.LaosCollectResponse;
 import com.alex.ua.client.delivery.model.moldova.MoldovaCollectResponse;
 import com.alex.ua.client.delivery.model.uganda.UgandaCollectResponse;
+import com.alex.ua.client.farm.model.RunResponse;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -25,7 +26,7 @@ public class ContinentFarmClient {
 
     private final WebClient webClient;
 
-    public String farmRun(DeliveryDto dto) {
+    public RunResponse farmRun(DeliveryDto dto) {
         return webClient
                 .post()
                 .uri(DELIVERY_RUN_URL)
@@ -41,7 +42,7 @@ public class ContinentFarmClient {
                     return response.bodyToMono(String.class)
                             .flatMap(body -> Mono.error(new RuntimeException("Server error: " + body)));
                 })
-                .bodyToMono(String.class)
+                .bodyToMono(RunResponse.class)
                 .retryWhen(Retry
                         .fixedDelay(3, Duration.ofSeconds(5)) // Retry up to 3 times with a 2-second delay
                         .filter(throwable -> throwable instanceof WebClientRequestException
