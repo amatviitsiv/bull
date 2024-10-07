@@ -21,11 +21,11 @@ public class FarmObjectProviderV2 {
     public FarmObjectProviderV2() {
         // -----------------------------------------
         farmModelList.add(new FarmModel(new FarmDto("crops", "w"), null, new HashSet<>()));
-        farmModelList.add(new FarmModel(new FarmDto("crops", "p"),  Map.of("cr", 500000), new HashSet<>()));
+        farmModelList.add(new FarmModel(new FarmDto("crops", "p"),  null, new HashSet<>()));
         farmModelList.add(new FarmModel(new FarmDto("crops", "cr"),  null, new HashSet<>()));
         farmModelList.add(new FarmModel(new FarmDto("crops", "co"),  null, new HashSet<>()));
         farmModelList.add(new FarmModel(new FarmDto("crops", "t"),  null, new HashSet<>()));
-        farmModelList.add(new FarmModel(new FarmDto("crops", "a"), Map.of("cr", 500000), new HashSet<>()));
+        farmModelList.add(new FarmModel(new FarmDto("crops", "a"), null, new HashSet<>()));
         farmModelList.add(new FarmModel(new FarmDto("crops", "s"), null, new HashSet<>()));
         farmModelList.add(new FarmModel(new FarmDto("crops", "wh"), null, new HashSet<>()));
         farmModelList.add(new FarmModel(new FarmDto("crops", "r"), null, new HashSet<>()));
@@ -34,11 +34,11 @@ public class FarmObjectProviderV2 {
 //-----------------------------------------------
         farmModelList.add(new FarmModel(new FarmDto("animals", "ch"), Map.of("co", 2048), new HashSet<>(Arrays.asList("Corn"))));
         farmModelList.add(new FarmModel(new FarmDto("animals", "cw"), Map.of("w", 12300), new HashSet<>(Arrays.asList("Wheat"))));
-        farmModelList.add(new FarmModel(new FarmDto("animals", "pi"), Map.of("p", 500000), new HashSet<>(Arrays.asList("Potato"))));
+        farmModelList.add(new FarmModel(new FarmDto("animals", "pi"), Map.of("p", 1024), new HashSet<>(Arrays.asList("Potato"))));
         farmModelList.add(new FarmModel(new FarmDto("animals", "gs"), Map.of("co", 512), new HashSet<>(Arrays.asList("Corn"))));
         farmModelList.add(new FarmModel(new FarmDto("animals", "sh"), Map.of("t", 12300), new HashSet<>(Arrays.asList("Tomato"))));
-        farmModelList.add(new FarmModel(new FarmDto("animals", "gt"), Map.of("cr", 2050), new HashSet<>(Arrays.asList("Carrot"))));
-        farmModelList.add(new FarmModel(new FarmDto("animals", "h"), Map.of("pc", 8190), new HashSet<>(Arrays.asList("Peach"))));
+        farmModelList.add(new FarmModel(new FarmDto("animals", "gt"), Map.of("cr", 4100), new HashSet<>(Arrays.asList("Carrot"))));
+        farmModelList.add(new FarmModel(new FarmDto("animals", "h"), Map.of("pc", 16400), new HashSet<>(Arrays.asList("Peach"))));
 //----------------------------------------
         farmModelList.add(new FarmModel(new FarmDto("workshops", "m"), Map.of("w", 1024), new HashSet<>(Arrays.asList("Wheat"))));
         farmModelList.add(new FarmModel(new FarmDto("workshops", "sg"), Map.of("co", 1024), new HashSet<>(Arrays.asList("Corn"))));
@@ -74,12 +74,12 @@ public class FarmObjectProviderV2 {
         farmModelList.add(new FarmModel(new FarmDto("workshops", "gb"), Map.of(
                 "w", 2560,
                 "h", 512,
-                "s", 2048), new HashSet<>(Arrays.asList("Bee", "Strawberry"))));
+                "s", 2048), new HashSet<>(Arrays.asList("Bee"))));
         farmModelList.add(new FarmModel(new FarmDto("workshops", "pf"), Map.of(
                 "p", 1024,
                 "bu", 512), new HashSet<>(Arrays.asList("Potato", "Butter"))));
 //-------------------------------------------------------------------------------
-        farmModelList.add(new FarmModel(new FarmDto("workshops", "bc"), Map.of("h", 4100), new HashSet<>(Arrays.asList("Bee"))));
+        farmModelList.add(new FarmModel(new FarmDto("workshops", "bc"), Map.of("h", 16400), new HashSet<>(Arrays.asList("Bee"))));
         farmModelList.add(new FarmModel(new FarmDto("workshops", "bn"), Map.of("sh", 3070), new HashSet<>(Arrays.asList("Sheep"))));
         farmModelList.add(new FarmModel(new FarmDto("workshops", "tr"), Map.of("sh", 6140), new HashSet<>(Arrays.asList("Sheep"))));
         farmModelList.add(new FarmModel(new FarmDto("workshops", "so"), Map.of("sh", 4100), new HashSet<>(Arrays.asList("Sheep"))));
