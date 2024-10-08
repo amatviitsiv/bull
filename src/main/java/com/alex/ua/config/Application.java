@@ -2,9 +2,9 @@ package com.alex.ua.config;
 
 import com.alex.ua.client.FarmBullClientImpl;
 import com.alex.ua.client.delivery.model.DeliveryModel;
-import com.alex.ua.client.farm.booster.BoosterDto;
-import com.alex.ua.client.farm.model.FarmDto;
+import com.alex.ua.client.delivery.model.tap.AnimalTapModel;
 import com.alex.ua.client.farm.model.FarmModel;
+import com.alex.ua.provider.AnimalsProvider;
 import com.alex.ua.provider.DeliveryObjectProvider;
 import com.alex.ua.provider.FarmObjectProviderV2;
 import com.alex.ua.service.DeliveryService;
@@ -18,6 +18,7 @@ import org.springframework.context.ApplicationContext;
 import java.time.LocalDateTime;
 import java.util.LinkedList;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 
 @SpringBootApplication(
         scanBasePackages = {"com.alex.ua"}
@@ -40,22 +41,36 @@ public class Application {
         LinkedList<DeliveryModel> ugandaModels = deliveryObjectProvider.getUgandaModels();
         LinkedList<DeliveryModel> moldovaModels = deliveryObjectProvider.getMoldovaModels();
 
-        /*//burundiModels.forEach(model -> model.setStartDateTime(LocalDateTime.now().minusMinutes(120)));
-        ugandaModels.forEach(model -> model.setStartDateTime(LocalDateTime.now().minusMinutes(150)));
-        laosModels.forEach(model -> model.setStartDateTime(LocalDateTime.now().minusMinutes(130)));
-        moldovaModels.forEach(model -> model.setStartDateTime(LocalDateTime.now().minusMinutes(310)));*/
+        AnimalsProvider animalsProvider = new AnimalsProvider();
+        LinkedList<AnimalTapModel> animals = animalsProvider.getAnimals();
 
         FarmObjectProviderV2 farmObjectProviderV2 = new FarmObjectProviderV2();
         LinkedList<FarmModel> farmModelList = farmObjectProviderV2.getFarmModelList();
-        farmService.initializeFarm(farmObjectProviderV2, deliveryObjectProvider);
+        farmService.initializeFarm(farmObjectProviderV2, deliveryObjectProvider, animals);
+
         LocalDateTime tapBoxDate = null;
+        AtomicReference<LocalDateTime> animalTaps = new AtomicReference<>(LocalDateTime.now());
 
 
         //eddyService.rollEddy();
 
         do {
             if (Objects.isNull(tapBoxDate) || tapBoxDate.plusSeconds(3333).isBefore(LocalDateTime.now())) {
-                tapBoxDate = tapService.tapBox();
+                try {
+                    tapBoxDate = tapService.tapBox();
+                } catch (Exception exception) {
+                    System.out.println("Exception while box tapping");
+                }
+            }
+
+            if (animalTaps.get().plusSeconds(352).isBefore(LocalDateTime.now())) {
+                animals.forEach(animal -> animalTaps.set(tapService.tapAnimal(animal.getDto())));
+            }
+
+            try {
+                animals.forEach(animal -> tapService.collectAnimal(animal, farmObjectProviderV2.getFarmModelList()));
+            } catch (Exception exception) {
+                System.out.println("Exception while animal collecting");
             }
 
             farmModelList.forEach(farmModel -> farmService.runFarmEvent(farmModel, farmObjectProviderV2));

@@ -8,6 +8,7 @@ import com.alex.ua.client.delivery.model.RequiredAttribute;
 import com.alex.ua.client.delivery.model.burundi.BurundiCollectResponse;
 import com.alex.ua.client.delivery.model.laos.LaosCollectResponse;
 import com.alex.ua.client.delivery.model.moldova.MoldovaCollectResponse;
+import com.alex.ua.client.delivery.model.tap.AnimalTapModel;
 import com.alex.ua.client.delivery.model.uganda.UgandaCollectResponse;
 import com.alex.ua.client.farm.model.FarmCollectResponse;
 import com.alex.ua.client.farm.model.FarmModel;
@@ -50,7 +51,8 @@ public class FarmServiceV2 {
     @Autowired
     private ObjectMapper objectMapper;
 
-    public void initializeFarm(FarmObjectProviderV2 providerV2, DeliveryObjectProvider deliveryObjectProvider) {
+    public void initializeFarm(FarmObjectProviderV2 providerV2, DeliveryObjectProvider deliveryObjectProvider,
+                               LinkedList<AnimalTapModel> animals) {
         AuthenticateResponse authResponse = authClient.authenticate();
         Map<String, Object> user = authResponse.getUser();
         LinkedList<FarmModel> farmModelList = providerV2.getFarmModelList();
@@ -65,6 +67,18 @@ public class FarmServiceV2 {
             }
             System.out.println(PURPLE + " " + model.getFarmDto().getId() + ": " + model.getStoredAmount() + " " + model.getCollectDateTime() + " " + RESET);
         });
+
+        animals.forEach(model -> {
+            model.setCollectTime(
+                    LocalDateTime.ofInstant(
+                            Instant.ofEpochSecond((int) user.get(
+                                    model.getAnimalPrefix() + model.getDto().getAnimal_idx() + model.getCollectPostfix())), ZoneId.systemDefault()));
+            Map<String, Integer> required = (Map<String, Integer>) user.get(model.getAnimalPrefix() + model.getDto().getAnimal_idx() + model.getRequiredPostfix());
+            for (Map.Entry<String, Integer> entry : required.entrySet()) {
+                model.getRequired().add(new RequiredAttribute(entry.getKey(), entry.getValue()));
+            }
+        });
+
 
         fillBurundiDeliveryState(user, deliveryObjectProvider);
         fillUgandaDeliveryState(user, deliveryObjectProvider);
