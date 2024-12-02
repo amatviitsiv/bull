@@ -6,8 +6,10 @@ import com.alex.ua.client.auth.AuthenticateResponse;
 import com.alex.ua.client.delivery.model.DeliveryModel;
 import com.alex.ua.client.delivery.model.RequiredAttribute;
 import com.alex.ua.client.delivery.model.burundi.BurundiCollectResponse;
+import com.alex.ua.client.delivery.model.finland.FinlandCollectResponse;
 import com.alex.ua.client.delivery.model.laos.LaosCollectResponse;
 import com.alex.ua.client.delivery.model.moldova.MoldovaCollectResponse;
+import com.alex.ua.client.delivery.model.serbiya.SerbiaCollectResponse;
 import com.alex.ua.client.delivery.model.tap.AnimalTapModel;
 import com.alex.ua.client.delivery.model.uganda.UgandaCollectResponse;
 import com.alex.ua.client.farm.model.FarmCollectResponse;
@@ -40,7 +42,7 @@ import static com.alex.ua.util.ColorUtils.YELLOW;
 
 @Service
 public class FarmServiceV2 {
-    private static final int MAX_PLOTS = 13; // Максимальное количество грядок
+    private static final int MAX_PLOTS = 14; // Максимальное количество грядок
     private final AtomicInteger activePlots = new AtomicInteger(0); // Счётчик активных грядок
     private final Set<String> activeCrops = new HashSet<>();
 
@@ -84,6 +86,8 @@ public class FarmServiceV2 {
         fillUgandaDeliveryState(user, deliveryObjectProvider);
         fillLaosDeliveryState(user, deliveryObjectProvider);
         fillMoldovaDeliveryState(user, deliveryObjectProvider);
+        fillSerbiaDeliveryState(user, deliveryObjectProvider);
+        fillFinlandDeliveryState(user, deliveryObjectProvider);
         System.out.println(PURPLE + " Finished initializing Farm. " + RESET);
     }
 
@@ -92,7 +96,8 @@ public class FarmServiceV2 {
         Object larqObject = user.get("larq");
 
         if (larqObject instanceof List) {
-            larq = objectMapper.convertValue(larqObject, new TypeReference<>() {});
+            larq = objectMapper.convertValue(larqObject, new TypeReference<>() {
+            });
             LinkedList<DeliveryModel> laosModels = deliveryObjectProvider.getLaosModels();
             laosModels.forEach(model -> {
                 LaosCollectResponse.LarqItem larqItem = larq.get(model.getDeliveryDto().getRid());
@@ -112,7 +117,8 @@ public class FarmServiceV2 {
         // Check if the 'brrq' field is present and is a List
         if (brrqObj instanceof List) {
             // Use ObjectMapper to convert the list of maps to a list of BrrqItems
-            brrq = objectMapper.convertValue(brrqObj, new TypeReference<>() {});
+            brrq = objectMapper.convertValue(brrqObj, new TypeReference<>() {
+            });
             LinkedList<DeliveryModel> laosModels = deliveryObjectProvider.getBurundiModels();
             laosModels.forEach(model -> {
                 BurundiCollectResponse.BrrqItem brrqItem = brrq.get(model.getDeliveryDto().getRid());
@@ -130,7 +136,8 @@ public class FarmServiceV2 {
         Object mdrqObject = user.get("mdrq");
 
         if (mdrqObject instanceof List) {
-            mdrq = objectMapper.convertValue(mdrqObject, new TypeReference<>() {});
+            mdrq = objectMapper.convertValue(mdrqObject, new TypeReference<>() {
+            });
             LinkedList<DeliveryModel> moldovaModels = deliveryObjectProvider.getMoldovaModels();
             moldovaModels.forEach(model -> {
                 MoldovaCollectResponse.MdrqItem mdrqItem = mdrq.get(model.getDeliveryDto().getRid());
@@ -159,7 +166,43 @@ public class FarmServiceV2 {
                 }
             });
         }
+    }
+
+    private void fillSerbiaDeliveryState(Map<String, Object> user, DeliveryObjectProvider deliveryObjectProvider) {
+        List<SerbiaCollectResponse.SbrqItem> sbrq;
+        Object sbrqObject = user.get("sbrq");
+
+        if (sbrqObject instanceof List) {
+            sbrq = objectMapper.convertValue(sbrqObject, new TypeReference<>() {});
+            LinkedList<DeliveryModel> serbiaModels = deliveryObjectProvider.getSerbiyaModels();
+            serbiaModels.forEach(model -> {
+                SerbiaCollectResponse.SbrqItem sbrqItem = sbrq.get(model.getDeliveryDto().getRid());
+                Map<String, Integer> requires = sbrqItem.getRequires();
+                fillRequires(requires, model);
+                if (Objects.nonNull(sbrqItem.getSbe())) {
+                    model.setCollectDateTime(LocalDateTime.ofInstant(Instant.ofEpochSecond(sbrqItem.getSbe()), ZoneId.systemDefault()));
+                }
+            });
         }
+    }
+
+    private void fillFinlandDeliveryState(Map<String, Object> user, DeliveryObjectProvider deliveryObjectProvider) {
+        List<FinlandCollectResponse.FirqItem> firq;
+        Object firqObject = user.get("firq");
+
+        if (firqObject instanceof List) {
+            firq = objectMapper.convertValue(firqObject, new TypeReference<>() {});
+            LinkedList<DeliveryModel> finlandModels = deliveryObjectProvider.getFinlandModels();
+            finlandModels.forEach(model -> {
+                FinlandCollectResponse.FirqItem firqItem = firq.get(model.getDeliveryDto().getRid());
+                Map<String, Integer> requires = firqItem.getRequires();
+                fillRequires(requires, model);
+                if (Objects.nonNull(firqItem.getFie())) {
+                    model.setCollectDateTime(LocalDateTime.ofInstant(Instant.ofEpochSecond(firqItem.getFie()), ZoneId.systemDefault()));
+                }
+            });
+        }
+    }
 
     private void fillRequires(Map<String, Integer> requires, DeliveryModel model) {
         model.getRequired().clear();
@@ -181,7 +224,7 @@ public class FarmServiceV2 {
     }
 
     private boolean isEnoughResources(FarmModel model, List<FarmModel> allFarmModels) {
-       return CollectionUtils.isEmpty(model.getRequired()) || model.getRequired().entrySet().stream().allMatch(required -> {
+        return CollectionUtils.isEmpty(model.getRequired()) || model.getRequired().entrySet().stream().allMatch(required -> {
             FarmModel farmModel = allFarmModels.stream()
                     .filter(farm -> farm.getFarmDto().getId().equals(required.getKey()))
                     .findFirst()

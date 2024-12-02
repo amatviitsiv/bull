@@ -4,14 +4,17 @@ import com.alex.ua.client.ContinentFarmClient;
 import com.alex.ua.client.delivery.model.DeliveryModel;
 import com.alex.ua.client.delivery.model.RequiredAttribute;
 import com.alex.ua.client.delivery.model.burundi.BurundiCollectResponse;
+import com.alex.ua.client.delivery.model.finland.FinlandCollectResponse;
 import com.alex.ua.client.delivery.model.laos.LaosCollectResponse;
 import com.alex.ua.client.delivery.model.moldova.MoldovaCollectResponse;
+import com.alex.ua.client.delivery.model.serbiya.SerbiaCollectResponse;
 import com.alex.ua.client.delivery.model.uganda.UgandaCollectResponse;
 import com.alex.ua.client.farm.model.FarmModel;
 import com.alex.ua.client.farm.model.RunResponse;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -65,8 +68,25 @@ public class DeliveryService {
         }
     }
 
+    public void runSerbiaEvent(DeliveryModel model, List<FarmModel> allFarmModels) {
+        if (shouldCollect(model)) {
+            collectSerbia(model);
+        } else if (shouldStartNewEvent(model, allFarmModels)) {
+            startNewSerbiaEvent(model, allFarmModels);
+        }
+    }
+
+    public void runFinlandEvent(DeliveryModel model, List<FarmModel> allFarmModels) {
+        if (shouldCollect(model)) {
+            collectFinland(model);
+        } else if (shouldStartNewEvent(model, allFarmModels)) {
+            startNewFinlandEvent(model, allFarmModels);
+        }
+    }
+
     private void collectUganda(DeliveryModel model) {
-        UgandaCollectResponse ugandaCollectResponse = continentFarmClient.ugandaCollect(model.getDeliveryDto());
+        ParameterizedTypeReference<UgandaCollectResponse> type = new ParameterizedTypeReference<>() {};
+        UgandaCollectResponse ugandaCollectResponse = continentFarmClient.collect(model.getDeliveryDto(), type);
         System.out.println(GREEN + "collected uganda " + RESET);
         model.setCollectDateTime(null);
         UgandaCollectResponse.UgrqItem ugrqItem = ugandaCollectResponse.getUgrq().get(model.getDeliveryDto().getRid());
@@ -78,7 +98,8 @@ public class DeliveryService {
     }
 
     private void collectLaos(DeliveryModel model) {
-        LaosCollectResponse laosCollectResponse = continentFarmClient.laosCollect(model.getDeliveryDto());
+        ParameterizedTypeReference<LaosCollectResponse> type = new ParameterizedTypeReference<>() {};
+        LaosCollectResponse laosCollectResponse = continentFarmClient.collect(model.getDeliveryDto(), type);
         System.out.println(GREEN + "collected laos " + RESET);
         model.setCollectDateTime(null);
         LaosCollectResponse.LarqItem ugrqItem = laosCollectResponse.getLarq().get(model.getDeliveryDto().getRid());
@@ -90,7 +111,8 @@ public class DeliveryService {
     }
 
     private void collectBurundi(DeliveryModel model) {
-        BurundiCollectResponse burundiCollectResponse = continentFarmClient.burundiCollect(model.getDeliveryDto());
+        ParameterizedTypeReference<BurundiCollectResponse> type = new ParameterizedTypeReference<>() {};
+        BurundiCollectResponse burundiCollectResponse = continentFarmClient.collect(model.getDeliveryDto(), type);
         System.out.println(GREEN + "collected burundi " + RESET);
         model.setCollectDateTime(null);
         BurundiCollectResponse.BrrqItem ugrqItem = burundiCollectResponse.getBrrq().get(model.getDeliveryDto().getRid());
@@ -102,11 +124,38 @@ public class DeliveryService {
     }
 
     private void collectMoldova(DeliveryModel model) {
-        MoldovaCollectResponse moldovaCollectResponse = continentFarmClient.moldovaCollect(model.getDeliveryDto());
+        ParameterizedTypeReference<MoldovaCollectResponse> type = new ParameterizedTypeReference<>() {};
+        MoldovaCollectResponse moldovaCollectResponse = continentFarmClient.collect(model.getDeliveryDto(), type);
         System.out.println(GREEN + "collected moldova " + RESET);
         model.setCollectDateTime(null);
         MoldovaCollectResponse.MdrqItem ugrqItem = moldovaCollectResponse.getMdrq().get(model.getDeliveryDto().getRid());
         Map<String, Integer> requires = ugrqItem.getRequires();
+        model.getRequired().clear();
+        for (Map.Entry<String, Integer> entry : requires.entrySet()) {
+            model.getRequired().add(new RequiredAttribute(entry.getKey(), entry.getValue()));
+        }
+    }
+
+    private void collectSerbia(DeliveryModel model) {
+        ParameterizedTypeReference<SerbiaCollectResponse> type = new ParameterizedTypeReference<>() {};
+        SerbiaCollectResponse serbiaCollectResponse = continentFarmClient.collect(model.getDeliveryDto(), type);
+        System.out.println(GREEN + "collected serbia " + RESET);
+        model.setCollectDateTime(null);
+        SerbiaCollectResponse.SbrqItem sbrqItem = serbiaCollectResponse.getSbrq().get(model.getDeliveryDto().getRid());
+        Map<String, Integer> requires = sbrqItem.getRequires();
+        model.getRequired().clear();
+        for (Map.Entry<String, Integer> entry : requires.entrySet()) {
+            model.getRequired().add(new RequiredAttribute(entry.getKey(), entry.getValue()));
+        }
+    }
+
+    private void collectFinland(DeliveryModel model) {
+        ParameterizedTypeReference<FinlandCollectResponse> type = new ParameterizedTypeReference<>() {};
+        FinlandCollectResponse moldovaCollectResponse = continentFarmClient.collect(model.getDeliveryDto(), type);
+        System.out.println(GREEN + "collected finland " + RESET);
+        model.setCollectDateTime(null);
+        FinlandCollectResponse.FirqItem firqItem = moldovaCollectResponse.getFirq().get(model.getDeliveryDto().getRid());
+        Map<String, Integer> requires = firqItem.getRequires();
         model.getRequired().clear();
         for (Map.Entry<String, Integer> entry : requires.entrySet()) {
             model.getRequired().add(new RequiredAttribute(entry.getKey(), entry.getValue()));
@@ -169,6 +218,30 @@ public class DeliveryService {
             List<MoldovaCollectResponse.MdrqItem> mdrq = objectMapper.convertValue(mdrqObject, new TypeReference<>() {
             });
             model.setCollectDateTime(LocalDateTime.ofInstant(Instant.ofEpochSecond(mdrq.get(model.getDeliveryDto().getRid()).getMde()), ZoneId.systemDefault()));
+            fillRequiredResources(model, allFarmModels);
+        }
+    }
+
+    private void startNewSerbiaEvent(DeliveryModel model, List<FarmModel> allFarmModels) {
+        RunResponse runResponse = continentFarmClient.farmRun(model.getDeliveryDto());
+        Object sbrqObject = runResponse.getProperties().get("sbrq");
+
+        if (sbrqObject instanceof List) {
+            List<SerbiaCollectResponse.SbrqItem> sbrq = objectMapper.convertValue(sbrqObject, new TypeReference<>() {
+            });
+            model.setCollectDateTime(LocalDateTime.ofInstant(Instant.ofEpochSecond(sbrq.get(model.getDeliveryDto().getRid()).getSbe()), ZoneId.systemDefault()));
+            fillRequiredResources(model, allFarmModels);
+        }
+    }
+
+    private void startNewFinlandEvent(DeliveryModel model, List<FarmModel> allFarmModels) {
+        RunResponse runResponse = continentFarmClient.farmRun(model.getDeliveryDto());
+        Object firqObject = runResponse.getProperties().get("firq");
+
+        if (firqObject instanceof List) {
+            List<FinlandCollectResponse.FirqItem> firq = objectMapper.convertValue(firqObject, new TypeReference<>() {
+            });
+            model.setCollectDateTime(LocalDateTime.ofInstant(Instant.ofEpochSecond(firq.get(model.getDeliveryDto().getRid()).getFie()), ZoneId.systemDefault()));
             fillRequiredResources(model, allFarmModels);
         }
     }

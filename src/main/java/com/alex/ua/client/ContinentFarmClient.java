@@ -7,6 +7,7 @@ import com.alex.ua.client.delivery.model.moldova.MoldovaCollectResponse;
 import com.alex.ua.client.delivery.model.uganda.UgandaCollectResponse;
 import com.alex.ua.client.farm.model.RunResponse;
 import lombok.AllArgsConstructor;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -54,7 +55,7 @@ public class ContinentFarmClient {
 
     }
 
-    public BurundiCollectResponse burundiCollect(DeliveryDto dto) {
+    public <T> T collect(DeliveryDto dto, ParameterizedTypeReference<T> type) {
         return webClient
                 .post()
                 .uri(DELIVERY_COLLECT_URL)
@@ -70,88 +71,7 @@ public class ContinentFarmClient {
                     return response.bodyToMono(String.class)
                             .flatMap(body -> Mono.error(new RuntimeException("Server error: " + body)));
                 })
-                .bodyToMono(BurundiCollectResponse.class)
-                .retryWhen(Retry
-                        .fixedDelay(3, Duration.ofSeconds(5)) // Retry up to 3 times with a 2-second delay
-                        .filter(throwable -> throwable instanceof WebClientRequestException
-                                || throwable instanceof SocketException) // Retry only on these exceptions
-                        .onRetryExhaustedThrow((retryBackoffSpec, retrySignal) ->
-                                new RuntimeException("Max retries exhausted", retrySignal.failure()))
-                )
-                .block();
-    }
-
-    public LaosCollectResponse laosCollect(DeliveryDto dto) {
-        return webClient
-                .post()
-                .uri(DELIVERY_COLLECT_URL)
-                .bodyValue(dto)
-                .retrieve()
-                .onStatus(HttpStatus::is4xxClientError, response -> {
-                    // Handle client errors
-                    return response.bodyToMono(String.class)
-                            .flatMap(body -> Mono.error(new RuntimeException("Client error: " + body)));
-                })
-                .onStatus(HttpStatus::is5xxServerError, response -> {
-                    // Handle server errors
-                    return response.bodyToMono(String.class)
-                            .flatMap(body -> Mono.error(new RuntimeException("Server error: " + body)));
-                })
-                .bodyToMono(LaosCollectResponse.class)
-                .retryWhen(Retry
-                        .fixedDelay(3, Duration.ofSeconds(5)) // Retry up to 3 times with a 2-second delay
-                        .filter(throwable -> throwable instanceof WebClientRequestException
-                                || throwable instanceof SocketException) // Retry only on these exceptions
-                        .onRetryExhaustedThrow((retryBackoffSpec, retrySignal) ->
-                                new RuntimeException("Max retries exhausted", retrySignal.failure()))
-                )
-                .block();
-    }
-
-    public UgandaCollectResponse ugandaCollect(DeliveryDto dto) {
-        return webClient
-                .post()
-                .uri(DELIVERY_COLLECT_URL)
-                .bodyValue(dto)
-                .retrieve()
-                .onStatus(HttpStatus::is4xxClientError, response -> {
-                    // Handle client errors
-                    return response.bodyToMono(String.class)
-                            .flatMap(body -> Mono.error(new RuntimeException("Client error: " + body)));
-                })
-                .onStatus(HttpStatus::is5xxServerError, response -> {
-                    // Handle server errors
-                    return response.bodyToMono(String.class)
-                            .flatMap(body -> Mono.error(new RuntimeException("Server error: " + body)));
-                })
-                .bodyToMono(UgandaCollectResponse.class)
-                .retryWhen(Retry
-                        .fixedDelay(3, Duration.ofSeconds(5)) // Retry up to 3 times with a 2-second delay
-                        .filter(throwable -> throwable instanceof WebClientRequestException
-                                || throwable instanceof SocketException) // Retry only on these exceptions
-                        .onRetryExhaustedThrow((retryBackoffSpec, retrySignal) ->
-                                new RuntimeException("Max retries exhausted", retrySignal.failure()))
-                )
-                .block();
-    }
-
-    public MoldovaCollectResponse moldovaCollect(DeliveryDto dto) {
-        return webClient
-                .post()
-                .uri(DELIVERY_COLLECT_URL)
-                .bodyValue(dto)
-                .retrieve()
-                .onStatus(HttpStatus::is4xxClientError, response -> {
-                    // Handle client errors
-                    return response.bodyToMono(String.class)
-                            .flatMap(body -> Mono.error(new RuntimeException("Client error: " + body)));
-                })
-                .onStatus(HttpStatus::is5xxServerError, response -> {
-                    // Handle server errors
-                    return response.bodyToMono(String.class)
-                            .flatMap(body -> Mono.error(new RuntimeException("Server error: " + body)));
-                })
-                .bodyToMono(MoldovaCollectResponse.class)
+                .bodyToMono(type)
                 .retryWhen(Retry
                         .fixedDelay(3, Duration.ofSeconds(5)) // Retry up to 3 times with a 2-second delay
                         .filter(throwable -> throwable instanceof WebClientRequestException

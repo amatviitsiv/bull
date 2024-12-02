@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
@@ -51,7 +52,7 @@ public class TapService {
     public LocalDateTime tapAnimal(AnimalTapDto dto) {
         RunResponse runResponse = client.tapAnimal(dto);
         Object eml = runResponse.getProperties().get("eml");
-        System.out.println("ANIMAL taped");
+        System.out.println(LocalTime.now() + " ANIMAL taped");
         return LocalDateTime.ofInstant(Instant.ofEpochSecond((int) eml), ZoneId.systemDefault());
     }
 
@@ -68,6 +69,15 @@ public class TapService {
             });
             if (isEnoughResources) {
                 AnimalCollectDto collectDto = new AnimalCollectDto(model.getDto().getAnimal_idx());
+                model.getRequired().forEach(required2 -> {
+                    FarmModel farmModel = allFarmModels.stream()
+                            .filter(farm -> farm.getFarmDto().getId().equals(required2.getId()))
+                            .findFirst()
+                            .orElseThrow();
+                    System.out.println(GREEN + " was stored amount: " + farmModel.getFarmDto().getId() + " " + farmModel.getStoredAmount());
+                    farmModel.setStoredAmount(farmModel.getStoredAmount() - required2.getAmount());
+                    System.out.println(GREEN + " set stored amount: " + farmModel.getFarmDto().getId() + " " + farmModel.getStoredAmount());
+                });
                 RunResponse runResponse = client.collectAnimal(collectDto);
                 model.setCollectTime(
                         LocalDateTime.ofInstant(
@@ -76,6 +86,7 @@ public class TapService {
 
                 Map<String, Integer> required = (Map<String, Integer>) runResponse.getProperties().get(
                         model.getAnimalPrefix() + model.getDto().getAnimal_idx() + model.getRequiredPostfix());
+                model.getRequired().clear();
                 for (Map.Entry<String, Integer> entry : required.entrySet()) {
                     model.getRequired().add(new RequiredAttribute(entry.getKey(), entry.getValue()));
                 }

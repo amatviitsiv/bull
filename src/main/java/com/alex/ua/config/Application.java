@@ -3,6 +3,8 @@ package com.alex.ua.config;
 import com.alex.ua.client.FarmBullClientImpl;
 import com.alex.ua.client.delivery.model.DeliveryModel;
 import com.alex.ua.client.delivery.model.tap.AnimalTapModel;
+import com.alex.ua.client.farm.booster.BoosterDto;
+import com.alex.ua.client.farm.model.FarmDto;
 import com.alex.ua.client.farm.model.FarmModel;
 import com.alex.ua.provider.AnimalsProvider;
 import com.alex.ua.provider.DeliveryObjectProvider;
@@ -40,6 +42,8 @@ public class Application {
         LinkedList<DeliveryModel> laosModels = deliveryObjectProvider.getLaosModels();
         LinkedList<DeliveryModel> ugandaModels = deliveryObjectProvider.getUgandaModels();
         LinkedList<DeliveryModel> moldovaModels = deliveryObjectProvider.getMoldovaModels();
+        LinkedList<DeliveryModel> serbiaModels = deliveryObjectProvider.getSerbiyaModels();
+        LinkedList<DeliveryModel> finlandModels = deliveryObjectProvider.getFinlandModels();
 
         AnimalsProvider animalsProvider = new AnimalsProvider();
         LinkedList<AnimalTapModel> animals = animalsProvider.getAnimals();
@@ -50,7 +54,18 @@ public class Application {
 
         LocalDateTime tapBoxDate = null;
         AtomicReference<LocalDateTime> animalTaps = new AtomicReference<>(LocalDateTime.now());
-
+        /*if (animalTaps.get().plusSeconds(185).isBefore(LocalDateTime.now())) {
+            try {
+                animals.forEach(animal -> animalTaps.set(tapService.tapAnimal(animal.getDto())));
+            } catch (Exception exception) {
+                System.out.println("Exception while animals tapping");
+            }
+        }*/
+        /*try {
+            animals.forEach(animal -> tapService.collectAnimal(animal, farmObjectProviderV2.getFarmModelList()));
+        } catch (Exception exception) {
+            System.out.println("Exception while animal collecting");
+        }*/
 
         //eddyService.rollEddy();
 
@@ -63,25 +78,17 @@ public class Application {
                 }
             }
 
-            if (animalTaps.get().plusSeconds(352).isBefore(LocalDateTime.now())) {
-                animals.forEach(animal -> animalTaps.set(tapService.tapAnimal(animal.getDto())));
-            }
 
-            try {
-                animals.forEach(animal -> tapService.collectAnimal(animal, farmObjectProviderV2.getFarmModelList()));
-            } catch (Exception exception) {
-                System.out.println("Exception while animal collecting");
-            }
 
             farmModelList.forEach(farmModel -> farmService.runFarmEvent(farmModel, farmObjectProviderV2));
-
             burundiModels.forEach(bur -> deliveryService.runBurundiEvent(bur, farmObjectProviderV2.getFarmModelList()));
             ugandaModels.forEach(uga -> deliveryService.runUgandaEvent(uga, farmObjectProviderV2.getFarmModelList()));
             laosModels.forEach(lao -> deliveryService.runLaosEvent(lao, farmObjectProviderV2.getFarmModelList()));
             //moldovaModels.forEach(mol -> deliveryService.runMoldovaEvent(mol, farmObjectProviderV2.getFarmModelList()));
-
+            //serbiaModels.forEach(ser -> deliveryService.runSerbiaEvent(ser, farmObjectProviderV2.getFarmModelList()));
+            //finlandModels.forEach(fin -> deliveryService.runFinlandEvent(fin, farmObjectProviderV2.getFarmModelList()));
             try {
-                Thread.sleep(10000); // 60000 milliseconds = 1 minute
+                Thread.sleep(5000); // 60000 milliseconds = 1 minute
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 System.err.println("Thread was interrupted: " + e.getMessage());
@@ -90,11 +97,13 @@ public class Application {
         } while (true);
 
         /*FarmDto wh = new FarmDto("crops", "pc");
-        //BoosterDto whBooster = new BoosterDto("ad", "pc", "crops");
-        BoosterDto whBooster = new BoosterDto("booster", "pc", "crops");
+        //BoosterDto whBooster = new BoosterDto("booster", "pc", "crops");
+        BoosterDto whBooster = new BoosterDto("ad", "pc", "crops");
 
-        for (int i = 0; i < 6; i++) {
+        for (int i = 0; i < 4; i++) {
             farmBullClient.farmRun(wh);
+            farmBullClient.boostRun(whBooster);
+            farmBullClient.boostRun(whBooster);
             farmBullClient.boostRun(whBooster);
             farmBullClient.boostRun(whBooster);
             farmBullClient.boostRun(whBooster);
