@@ -3,6 +3,7 @@ package com.alex.ua.service;
 import com.alex.ua.client.AuthClient;
 import com.alex.ua.client.FarmBullClientImpl;
 import com.alex.ua.client.auth.AuthenticateResponse;
+import com.alex.ua.client.collection.CollectionModel;
 import com.alex.ua.client.delivery.model.DeliveryModel;
 import com.alex.ua.client.delivery.model.RequiredAttribute;
 import com.alex.ua.client.delivery.model.burundi.BurundiCollectResponse;
@@ -54,7 +55,7 @@ public class FarmServiceV2 {
     private ObjectMapper objectMapper;
 
     public void initializeFarm(FarmObjectProviderV2 providerV2, DeliveryObjectProvider deliveryObjectProvider,
-                               LinkedList<AnimalTapModel> animals) {
+                               LinkedList<AnimalTapModel> animals, List<CollectionModel> collectionModels) {
         AuthenticateResponse authResponse = authClient.authenticate();
         Map<String, Object> user = authResponse.getUser();
         LinkedList<FarmModel> farmModelList = providerV2.getFarmModelList();
@@ -78,6 +79,15 @@ public class FarmServiceV2 {
             Map<String, Integer> required = (Map<String, Integer>) user.get(model.getAnimalPrefix() + model.getDto().getAnimal_idx() + model.getRequiredPostfix());
             for (Map.Entry<String, Integer> entry : required.entrySet()) {
                 model.getRequired().add(new RequiredAttribute(entry.getKey(), entry.getValue()));
+            }
+        });
+
+        collectionModels.forEach(model -> {
+            Object collect = user.get(model.getDto().getId() + "e");
+            if (Objects.nonNull(collect) && (int) collect != 0) {
+                model.setCollectDateTime(
+                        LocalDateTime.ofInstant(
+                                Instant.ofEpochSecond((int) collect), ZoneId.systemDefault()));
             }
         });
 
@@ -155,7 +165,8 @@ public class FarmServiceV2 {
         Object ugrqObject = user.get("ugrq");
 
         if (ugrqObject instanceof List) {
-            ugrq = objectMapper.convertValue(ugrqObject, new TypeReference<>() {});
+            ugrq = objectMapper.convertValue(ugrqObject, new TypeReference<>() {
+            });
             LinkedList<DeliveryModel> ugandaModels = deliveryObjectProvider.getUgandaModels();
             ugandaModels.forEach(model -> {
                 UgandaCollectResponse.UgrqItem ugrqItem = ugrq.get(model.getDeliveryDto().getRid());
@@ -173,7 +184,8 @@ public class FarmServiceV2 {
         Object sbrqObject = user.get("sbrq");
 
         if (sbrqObject instanceof List) {
-            sbrq = objectMapper.convertValue(sbrqObject, new TypeReference<>() {});
+            sbrq = objectMapper.convertValue(sbrqObject, new TypeReference<>() {
+            });
             LinkedList<DeliveryModel> serbiaModels = deliveryObjectProvider.getSerbiyaModels();
             serbiaModels.forEach(model -> {
                 SerbiaCollectResponse.SbrqItem sbrqItem = sbrq.get(model.getDeliveryDto().getRid());
@@ -191,7 +203,8 @@ public class FarmServiceV2 {
         Object firqObject = user.get("firq");
 
         if (firqObject instanceof List) {
-            firq = objectMapper.convertValue(firqObject, new TypeReference<>() {});
+            firq = objectMapper.convertValue(firqObject, new TypeReference<>() {
+            });
             LinkedList<DeliveryModel> finlandModels = deliveryObjectProvider.getFinlandModels();
             finlandModels.forEach(model -> {
                 FinlandCollectResponse.FirqItem firqItem = firq.get(model.getDeliveryDto().getRid());

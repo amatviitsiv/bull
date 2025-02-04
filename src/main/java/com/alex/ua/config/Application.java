@@ -1,18 +1,17 @@
 package com.alex.ua.config;
 
 import com.alex.ua.client.FarmBullClientImpl;
+import com.alex.ua.client.collection.CollectionModel;
 import com.alex.ua.client.delivery.model.DeliveryModel;
 import com.alex.ua.client.delivery.model.tap.AnimalTapModel;
 import com.alex.ua.client.farm.booster.BoosterDto;
 import com.alex.ua.client.farm.model.FarmDto;
 import com.alex.ua.client.farm.model.FarmModel;
 import com.alex.ua.provider.AnimalsProvider;
+import com.alex.ua.provider.CollectionsProvider;
 import com.alex.ua.provider.DeliveryObjectProvider;
 import com.alex.ua.provider.FarmObjectProviderV2;
-import com.alex.ua.service.DeliveryService;
-import com.alex.ua.service.EddyService;
-import com.alex.ua.service.FarmServiceV2;
-import com.alex.ua.service.TapService;
+import com.alex.ua.service.*;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
@@ -36,6 +35,7 @@ public class Application {
         EddyService eddyService = context.getBean(EddyService.class);
         TapService tapService = context.getBean(TapService.class);
         FarmBullClientImpl farmBullClient = context.getBean(FarmBullClientImpl.class);
+        CollectionService collectionService = context.getBean(CollectionService.class);
 
         DeliveryObjectProvider deliveryObjectProvider = new DeliveryObjectProvider();
         LinkedList<DeliveryModel> burundiModels = deliveryObjectProvider.getBurundiModels();
@@ -48,9 +48,13 @@ public class Application {
         AnimalsProvider animalsProvider = new AnimalsProvider();
         LinkedList<AnimalTapModel> animals = animalsProvider.getAnimals();
 
+        CollectionsProvider collectionsProvider = new CollectionsProvider();
+        LinkedList<CollectionModel> collectionsModels = collectionsProvider.getCollectionsModels();
+
         FarmObjectProviderV2 farmObjectProviderV2 = new FarmObjectProviderV2();
         LinkedList<FarmModel> farmModelList = farmObjectProviderV2.getFarmModelList();
-        farmService.initializeFarm(farmObjectProviderV2, deliveryObjectProvider, animals);
+        farmService.initializeFarm(farmObjectProviderV2, deliveryObjectProvider, animals,
+                collectionsModels);
 
         LocalDateTime tapBoxDate = null;
         AtomicReference<LocalDateTime> animalTaps = new AtomicReference<>(LocalDateTime.now());
@@ -67,30 +71,34 @@ public class Application {
             System.out.println("Exception while animal collecting");
         }*/
 
+        /*if (Objects.isNull(tapBoxDate) || tapBoxDate.plusSeconds(3333).isBefore(LocalDateTime.now())) {
+            try {
+                tapBoxDate = tapService.tapBox();
+            } catch (Exception exception) {
+                System.out.println("Exception while box tapping");
+            }
+        }*/
         //eddyService.rollEddy();
 
         do {
-            if (Objects.isNull(tapBoxDate) || tapBoxDate.plusSeconds(3333).isBefore(LocalDateTime.now())) {
-                try {
-                    tapBoxDate = tapService.tapBox();
-                } catch (Exception exception) {
-                    System.out.println("Exception while box tapping");
-                }
-            }
+
+            //farmModelList.forEach(farmModel -> farmService.runFarmEvent(farmModel, farmObjectProviderV2));
 
 
-
-            farmModelList.forEach(farmModel -> farmService.runFarmEvent(farmModel, farmObjectProviderV2));
-            burundiModels.forEach(bur -> deliveryService.runBurundiEvent(bur, farmObjectProviderV2.getFarmModelList()));
-            ugandaModels.forEach(uga -> deliveryService.runUgandaEvent(uga, farmObjectProviderV2.getFarmModelList()));
-            laosModels.forEach(lao -> deliveryService.runLaosEvent(lao, farmObjectProviderV2.getFarmModelList()));
+            //burundiModels.forEach(bur -> deliveryService.runBurundiEvent(bur, farmObjectProviderV2.getFarmModelList()));
+            //ugandaModels.forEach(uga -> deliveryService.runUgandaEvent(uga, farmObjectProviderV2.getFarmModelList()));
+            //laosModels.forEach(lao -> deliveryService.runLaosEvent(lao, farmObjectProviderV2.getFarmModelList()));
             //moldovaModels.forEach(mol -> deliveryService.runMoldovaEvent(mol, farmObjectProviderV2.getFarmModelList()));
             //serbiaModels.forEach(ser -> deliveryService.runSerbiaEvent(ser, farmObjectProviderV2.getFarmModelList()));
             //finlandModels.forEach(fin -> deliveryService.runFinlandEvent(fin, farmObjectProviderV2.getFarmModelList()));
+
+            collectionsModels.forEach(collectionService::run);
+
             try {
                 Thread.sleep(5000); // 60000 milliseconds = 1 minute
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
+
                 System.err.println("Thread was interrupted: " + e.getMessage());
                 return;
             }

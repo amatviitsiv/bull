@@ -38,7 +38,7 @@ public class FarmObjectProviderV2 {
         farmModelList.add(new FarmModel(new FarmDto("animals", "gs"), Map.of("co", 16400), new HashSet<>(Arrays.asList("Corn"))));
         farmModelList.add(new FarmModel(new FarmDto("animals", "sh"), Map.of("t", 49200), new HashSet<>(Arrays.asList("Tomato"))));
         farmModelList.add(new FarmModel(new FarmDto("animals", "gt"), Map.of("cr", 32800), new HashSet<>(Arrays.asList("Carrot"))));
-        farmModelList.add(new FarmModel(new FarmDto("animals", "h"), Map.of("pc", 65000), new HashSet<>(Arrays.asList("Peach"))));
+        farmModelList.add(new FarmModel(new FarmDto("animals", "h"), Map.of("pc", 65500), new HashSet<>(Arrays.asList("Peach"))));
 //----------------------------------------
         farmModelList.add(new FarmModel(new FarmDto("workshops", "m"), Map.of("w", 4100), new HashSet<>(Arrays.asList("Wheat"))));
         farmModelList.add(new FarmModel(new FarmDto("workshops", "sg"), Map.of("co", 4100), new HashSet<>(Arrays.asList("Corn"))));
@@ -79,7 +79,7 @@ public class FarmObjectProviderV2 {
                 "p", 2050,
                 "bu", 1024), new HashSet<>(Arrays.asList("Potato", "Butter"))));
 //-------------------------------------------------------------------------------
-        farmModelList.add(new FarmModel(new FarmDto("workshops", "bc"), Map.of("h", 32800), new HashSet<>(Arrays.asList("Bee"))));
+        farmModelList.add(new FarmModel(new FarmDto("workshops", "bc"), Map.of("h", 65500), new HashSet<>(Arrays.asList("Bee"))));
         farmModelList.add(new FarmModel(new FarmDto("workshops", "bn"), Map.of("sh", 3070), new HashSet<>(Arrays.asList("Sheep"))));
         farmModelList.add(new FarmModel(new FarmDto("workshops", "tr"), Map.of("sh", 6140), new HashSet<>(Arrays.asList("Sheep"))));
         farmModelList.add(new FarmModel(new FarmDto("workshops", "so"), Map.of("sh", 4100), new HashSet<>(Arrays.asList("Sheep"))));
